@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SearchForm from "@/components/SearchForm";
 import PropertyCard from "@/components/PropertyCard";
-import { ArrowRight, Shield, Eye, Users, Award } from "lucide-react";
+import { ArrowRight, Shield, Eye, Users, Award, Home, Building2, Crown, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
@@ -56,10 +57,10 @@ const neighborhoods = [
 ];
 
 const propertyTypes = [
-  { name: "Casas de Luxo", icon: "🏡", description: "Residências exclusivas com arquitetura sofisticada" },
-  { name: "Apartamentos", icon: "🏢", description: "Unidades em condomínios de alto padrão" },
-  { name: "Coberturas", icon: "🌟", description: "Penthouses com vistas privilegiadas" },
-  { name: "Terrenos", icon: "🌳", description: "Lotes em localizações nobres" },
+  { name: "Casas de Luxo", icon: Home, description: "Residências exclusivas com arquitetura sofisticada" },
+  { name: "Apartamentos", icon: Building2, description: "Unidades em condomínios de alto padrão" },
+  { name: "Coberturas", icon: Crown, description: "Penthouses com vistas privilegiadas" },
+  { name: "Terrenos", icon: MapPin, description: "Lotes em localizações nobres" },
 ];
 
 export default function Home() {
@@ -122,15 +123,20 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {propertyTypes.map((type, index) => (
-              <Card key={index} className="text-center hover:shadow-luxury transition-all duration-300 hover:scale-105 cursor-pointer">
-                <CardContent className="p-8">
-                  <div className="text-4xl mb-4">{type.icon}</div>
-                  <h3 className="font-serif text-xl font-semibold mb-3">{type.name}</h3>
-                  <p className="text-muted-foreground text-sm">{type.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {propertyTypes.map((type, index) => {
+              const IconComponent = type.icon;
+              return (
+                <Card key={index} className="text-center hover:shadow-luxury transition-all duration-300 hover:scale-105 cursor-pointer">
+                  <CardContent className="p-8">
+                    <div className="flex justify-center mb-4">
+                      <IconComponent className="h-12 w-12 text-accent" />
+                    </div>
+                    <h3 className="font-serif text-xl font-semibold mb-3">{type.name}</h3>
+                    <p className="text-muted-foreground text-sm">{type.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>

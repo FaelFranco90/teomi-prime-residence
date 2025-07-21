@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -26,7 +27,7 @@ All colors MUST be HSL.
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 45 100% 51%;
+    --accent: 0 0% 75%;
     --accent-foreground: 0 0% 8%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,17 +35,17 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 45 100% 51%;
+    --ring: 0 0% 75%;
 
-    --luxury-gold: 45 100% 51%;
+    --luxury-silver: 0 0% 75%;
     --luxury-dark: 0 0% 15%;
     --luxury-gray: 0 0% 25%;
     
     --gradient-luxury: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--luxury-dark)));
-    --gradient-gold: linear-gradient(135deg, hsl(var(--accent)), hsl(45 80% 45%));
+    --gradient-silver: linear-gradient(135deg, hsl(var(--accent)), hsl(0 0% 65%));
     
     --shadow-luxury: 0 25px 50px -12px hsl(var(--primary) / 0.25);
-    --shadow-gold: 0 10px 30px -10px hsl(var(--accent) / 0.3));
+    --shadow-silver: 0 10px 30px -10px hsl(var(--accent) / 0.3));
 
     --radius: 0.5rem;
 

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,18 +64,18 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				luxury: {
-					gold: 'hsl(var(--luxury-gold))',
+					silver: 'hsl(var(--luxury-silver))',
 					dark: 'hsl(var(--luxury-dark))',
 					gray: 'hsl(var(--luxury-gray))'
 				}
 			},
 			backgroundImage: {
 				'gradient-luxury': 'var(--gradient-luxury)',
-				'gradient-gold': 'var(--gradient-gold)'
+				'gradient-silver': 'var(--gradient-silver)'
 			},
 			boxShadow: {
 				'luxury': 'var(--shadow-luxury)',
-				'gold': 'var(--shadow-gold)'
+				'silver': 'var(--shadow-silver)'
 			},
 			fontFamily: {
 				'serif': ['Playfair Display', 'serif'],
