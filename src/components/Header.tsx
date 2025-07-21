@@ -61,7 +61,7 @@ export default function Header() {
               <Search className="h-5 w-5" />
             </Button>
             <ThemeToggle />
-            <Button variant="silver" className="gap-2">
+            <Button variant="gold" className="gap-2">
               <MessageCircle className="h-4 w-4" />
               WhatsApp
             </Button>
@@ -110,7 +110,7 @@ export default function Header() {
                     <div className="flex justify-center">
                       <ThemeToggle />
                     </div>
-                    <Button variant="silver" className="w-full gap-2">
+                    <Button variant="gold" className="w-full gap-2">
                       <MessageCircle className="h-4 w-4" />
                       WhatsApp
                     </Button>
@@ -125,7 +125,7 @@ export default function Header() {
       {/* Floating WhatsApp Button */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button
-          variant="silver"
+          variant="gold"
           size="lg"
           className="rounded-full shadow-luxury hover:shadow-silver"
           onClick={() => window.open('https://wa.me/5512999999999', '_blank')}

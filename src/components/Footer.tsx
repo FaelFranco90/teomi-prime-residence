@@ -100,7 +100,7 @@ export default function Footer() {
               Entre em contato para um atendimento exclusivo e personalizado
             </p>
             <div className="space-y-3">
-              <Button variant="silver" className="w-full gap-2">
+              <Button variant="gold" className="w-full gap-2">
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
               </Button>

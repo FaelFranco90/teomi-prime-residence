@@ -122,7 +122,7 @@ export default function Contact() {
                         Enviar Mensagem
                       </Button>
                       <Button 
-                        variant="silver" 
+                        variant="gold" 
                         type="button"
                         className="flex-1 gap-2"
                         onClick={() => window.open('https://wa.me/5512999999999', '_blank')}
@@ -204,7 +204,7 @@ export default function Contact() {
                     Reuniões presenciais em ambiente reservado e confortável, 
                     garantindo total privacidade em suas negociações.
                   </p>
-                  <Button variant="silver" className="w-full">
+                  <Button variant="gold" className="w-full">
                     Agendar Reunião
                   </Button>
                 </CardContent>
