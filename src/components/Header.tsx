@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Search, Menu, X, MessageCircle } from "lucide-react";
@@ -9,7 +8,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 const navigation = [
   { name: "Imóveis", href: "/imoveis" },
   { name: "Sobre", href: "/sobre" },
-  { name: "Locação", href: "/locacao" },
   { name: "Contato", href: "/contato" },
 ];
 

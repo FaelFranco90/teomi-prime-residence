@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, MessageCircle, Instagram, Facebook, Linkedin } from "lucide-react";
@@ -7,7 +6,6 @@ const navigation = {
   main: [
     { name: "Imóveis", href: "/imoveis" },
     { name: "Sobre", href: "/sobre" },
-    { name: "Locação", href: "/locacao" },
     { name: "Contato", href: "/contato" },
   ],
   social: [

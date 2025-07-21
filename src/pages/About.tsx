@@ -234,27 +234,27 @@ export default function About() {
       </section>
 
       {/* Diferenciais da Marca */}
-      <section className="py-16 bg-luxury-dark text-background">
+      <section className="py-16 bg-luxury-dark text-foreground dark:text-background">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4 text-background dark:text-foreground">
               Por que Grandes Patrimônios Escolhem a <span className="text-accent">Teomi Prime</span>
             </h2>
-            <p className="opacity-90 max-w-2xl mx-auto">
+            <p className="text-background/90 dark:text-foreground/90 max-w-2xl mx-auto">
               Diferenciais que elevam nossos clientes e garantem negociações seguras, valorizadas e com total descrição.
             </p>
           </div>
           
           <div className="max-w-4xl mx-auto mb-12">
-            <Card className="bg-background/10 border-background/20 text-background hover:bg-background/20 transition-all">
+            <Card className="bg-background/20 border-background/30 backdrop-blur-sm hover:bg-background/25 transition-all">
               <CardContent className="p-8">
-                <p className="text-lg leading-relaxed text-center mb-8">
+                <p className="text-lg leading-relaxed text-center mb-8 text-background dark:text-foreground">
                   Na Teomi Prime, entendemos que grandes patrimônios exigem mais do que competência: exigem responsabilidade, inteligência de mercado e respeito absoluto ao tempo e à confiança de cada cliente.
                 </p>
-                <p className="text-lg leading-relaxed text-center mb-8">
+                <p className="text-lg leading-relaxed text-center mb-8 text-background dark:text-foreground">
                   Nosso atendimento vai além da venda: entregamos um processo estratégico, blindado e consultivo, que cuida de cada detalhe desde a avaliação até a finalização da transação.
                 </p>
-                <p className="text-lg leading-relaxed text-center">
+                <p className="text-lg leading-relaxed text-center text-background dark:text-foreground">
                   Atuamos com imóveis que representam verdadeiras oportunidades no segmento de altíssimo padrão — e com pessoas que valorizam atendimento de excelência e discrição como parte fundamental da experiência.
                 </p>
               </CardContent>
@@ -263,14 +263,14 @@ export default function About() {
 
           <div className="text-center mb-8">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="gold" size="lg" className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6">
+              <Button variant="gold" size="lg" className="text-lg px-8 py-6">
                 Conheça Nossos Diferenciais
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40 gap-3">
                 <Users className="h-5 w-5" />
                 Fale com um Especialista
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40">
                 Agendar Atendimento Privado
               </Button>
             </div>

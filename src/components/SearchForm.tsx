@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,30 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, SlidersHorizontal } from "lucide-react";
 
 export default function SearchForm() {
-  const [searchType, setSearchType] = useState("compra");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-luxury">
       <CardContent className="p-6">
-        {/* Search Type Toggle */}
-        <div className="flex gap-2 mb-6">
-          <Button
-            variant={searchType === "compra" ? "luxury" : "outline"}
-            onClick={() => setSearchType("compra")}
-            className="flex-1"
-          >
-            Compra
-          </Button>
-          <Button
-            variant={searchType === "locacao" ? "luxury" : "outline"}
-            onClick={() => setSearchType("locacao")}
-            className="flex-1"
-          >
-            Locação
-          </Button>
-        </div>
-
         {/* Main Search Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Select>
