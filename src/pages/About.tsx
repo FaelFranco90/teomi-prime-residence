@@ -233,16 +233,47 @@ export default function About() {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Diferenciais da Marca */}
       <section className="py-16 bg-luxury-dark text-background">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-              Por que Ultra-High-Net-Worth escolhem a Teomi
+              Por que Grandes Patrimônios Escolhem a <span className="text-accent">Teomi Prime</span>
             </h2>
             <p className="opacity-90 max-w-2xl mx-auto">
-              Diferenciadores únicos que posicionam nossos clientes à frente do mercado
+              Diferenciais que elevam nossos clientes e garantem negociações seguras, valorizadas e com total descrição.
             </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto mb-12">
+            <Card className="bg-background/10 border-background/20 text-background hover:bg-background/20 transition-all">
+              <CardContent className="p-8">
+                <p className="text-lg leading-relaxed text-center mb-8">
+                  Na Teomi Prime, entendemos que grandes patrimônios exigem mais do que competência: exigem responsabilidade, inteligência de mercado e respeito absoluto ao tempo e à confiança de cada cliente.
+                </p>
+                <p className="text-lg leading-relaxed text-center mb-8">
+                  Nosso atendimento vai além da venda: entregamos um processo estratégico, blindado e consultivo, que cuida de cada detalhe desde a avaliação até a finalização da transação.
+                </p>
+                <p className="text-lg leading-relaxed text-center">
+                  Atuamos com imóveis que representam verdadeiras oportunidades no segmento de altíssimo padrão — e com pessoas que valorizam atendimento de excelência e discrição como parte fundamental da experiência.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="gold" size="lg" className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6">
+                Conheça Nossos Diferenciais
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3">
+                <Users className="h-5 w-5" />
+                Fale com um Especialista
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30">
+                Agendar Atendimento Privado
+              </Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
