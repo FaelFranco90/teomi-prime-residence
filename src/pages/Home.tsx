@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SearchForm from "@/components/SearchForm";
 import PropertyCard from "@/components/PropertyCard";
-import { ArrowRight, Shield, Eye, Users, Award, Home, Building2, Crown, MapPin } from "lucide-react";
+import { ArrowRight, Shield, Eye, Users, Award, Home as HomeIcon, Building2, Crown, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-home.jpg";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
@@ -57,7 +57,7 @@ const neighborhoods = [
 ];
 
 const propertyTypes = [
-  { name: "Casas de Luxo", icon: Home, description: "Residências exclusivas com arquitetura sofisticada" },
+  { name: "Casas de Luxo", icon: HomeIcon, description: "Residências exclusivas com arquitetura sofisticada" },
   { name: "Apartamentos", icon: Building2, description: "Unidades em condomínios de alto padrão" },
   { name: "Coberturas", icon: Crown, description: "Penthouses com vistas privilegiadas" },
   { name: "Terrenos", icon: MapPin, description: "Lotes em localizações nobres" },
