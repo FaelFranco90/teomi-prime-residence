@@ -57,14 +57,14 @@ const stats = [
   { number: "R$ 250Mi+", label: "Negociados Discretamente" },
   { number: "98%", label: "Taxa de Satisfação" },
   { number: "45 dias", label: "Tempo Médio de Venda" },
-  { number: "12", label: "Clientes VIP/Mês" }
+  { number: "Premium", label: "Atendimento Exclusivo" }
 ];
 
 const benefits = [
   {
     icon: Globe,
-    title: "Acesso Off-Market",
-    description: "Portfólio exclusivo de imóveis não disponíveis publicamente"
+    title: "Imóveis Publicados e Reservados",
+    description: "Trabalhamos com imóveis publicados e também opções reservadas, acessíveis apenas mediante análise prévia do perfil e objetivos do comprador"
   },
   {
     icon: TrendingUp,
@@ -298,34 +298,54 @@ export default function About() {
         </div>
       </section>
 
-      {/* Urgency Section */}
+      {/* Atendimento e Posicionamento Comercial */}
       <section className="py-16 bg-background">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="bg-gradient-luxury p-8 rounded-lg text-background">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold mb-4">
-              Atendimento Limitado e Exclusivo
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+              Exclusividade no Atendimento. <span className="text-accent">Visibilidade com Inteligência.</span>
             </h2>
-            <p className="text-lg mb-6 opacity-90">
-              Atendemos apenas <strong>12 novos clientes por mês</strong> para garantir 
-              excelência e atenção total a cada negociação
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
+              Atendimento sob medida para grandes patrimônios, com foco em resultados e respeito ao tempo do cliente.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-background/20 p-4 rounded">
-                <div className="font-bold text-xl">3</div>
-                <div className="text-sm opacity-75">Vagas Restantes</div>
-              </div>
-              <div className="bg-background/20 p-4 rounded">
-                <div className="font-bold text-xl">7 dias</div>
-                <div className="text-sm opacity-75">Para Resposta</div>
-              </div>
-              <div className="bg-background/20 p-4 rounded">
-                <div className="font-bold text-xl">100%</div>
-                <div className="text-sm opacity-75">Confidencial</div>
-              </div>
+          </div>
+          
+          <div className="max-w-4xl mx-auto mb-12">
+            <Card className="border-accent/20 hover:shadow-luxury transition-all duration-300">
+              <CardContent className="p-8">
+                <p className="text-lg leading-relaxed text-center mb-8">
+                  Na Teomi Prime, valorizamos a privacidade e o conforto dos nossos clientes. Por isso, todos os nossos imóveis são cuidadosamente apresentados com descrição e critério, visando alcançar o público certo — sem exposições desnecessárias ou visitas sem propósito.
+                </p>
+                <p className="text-lg leading-relaxed text-center mb-8">
+                  Nosso compromisso com os proprietários é entregar propostas reais, de clientes verdadeiramente interessados e com potencial validado, antes mesmo de qualquer movimentação.
+                </p>
+                <p className="text-lg leading-relaxed text-center">
+                  Trabalhamos com foco em eficiência, segurança e resultados, respeitando o tempo e o patrimônio de quem confia em nós.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="bg-gradient-luxury p-8 rounded-lg text-background text-center">
+            <h3 className="font-serif text-2xl md:text-3xl font-bold mb-4">
+              Aqui, qualidade vem antes da quantidade
+            </h3>
+            <p className="text-lg mb-8 opacity-90">
+              Atendemos cada cliente com foco total, sem pressa, sem volume, e com toda a atenção que grandes patrimônios exigem.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="gold" size="lg" className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6">
+                Solicitar Avaliação Patrimonial
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30">
+                Agendar Reunião Confidencial
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3">
+                <MessageCircle className="h-5 w-5" />
+                WhatsApp VIP
+              </Button>
             </div>
-            <Button variant="gold" size="lg" className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6">
-              Solicitar Avaliação Patrimonial Gratuita
-            </Button>
           </div>
         </div>
       </section>
