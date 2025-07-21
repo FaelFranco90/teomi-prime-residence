@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,7 +122,7 @@ export default function Contact() {
                         Enviar Mensagem
                       </Button>
                       <Button 
-                        variant="gold" 
+                        variant="silver" 
                         type="button"
                         className="flex-1 gap-2"
                         onClick={() => window.open('https://wa.me/5512999999999', '_blank')}
@@ -172,9 +173,8 @@ export default function Contact() {
                     <div>
                       <h4 className="font-semibold mb-1">Endereço</h4>
                       <p className="text-muted-foreground">
-                        Av. Principais, 1234<br />
-                        Jardim das Indústrias<br />
-                        São José dos Campos - SP
+                        Avenida Independência, 70<br />
+                        Taubaté - SP
                       </p>
                     </div>
                   </div>
@@ -204,7 +204,7 @@ export default function Contact() {
                     Reuniões presenciais em ambiente reservado e confortável, 
                     garantindo total privacidade em suas negociações.
                   </p>
-                  <Button variant="gold" className="w-full">
+                  <Button variant="silver" className="w-full">
                     Agendar Reunião
                   </Button>
                 </CardContent>
@@ -219,7 +219,7 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-8">
             <h2 className="font-serif text-2xl font-bold mb-2">Nossa Localização</h2>
-            <p className="text-muted-foreground">Fácil acesso e estacionamento privativo</p>
+            <p className="text-muted-foreground">Localização privilegiada em Taubaté</p>
           </div>
           
           <Card className="overflow-hidden shadow-luxury">
@@ -228,7 +228,7 @@ export default function Contact() {
                 <MapPin className="h-12 w-12 text-accent mx-auto mb-4" />
                 <p className="text-muted-foreground">
                   Mapa interativo será carregado aqui<br />
-                  <span className="text-sm">Integração com Google Maps</span>
+                  <span className="text-sm">Avenida Independência, 70 - Taubaté-SP</span>
                 </p>
               </div>
             </div>

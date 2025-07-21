@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, MessageCircle, Instagram, Facebook, Linkedin } from "lucide-react";
@@ -25,7 +26,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="mb-6">
-              <span className="font-serif text-2xl font-bold bg-gradient-gold bg-clip-text text-transparent">
+              <span className="font-serif text-2xl font-bold bg-gradient-silver bg-clip-text text-transparent">
                 Teomi Prime
               </span>
               <p className="text-sm opacity-75 mt-2">
@@ -85,9 +86,8 @@ export default function Footer() {
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-accent mt-0.5" />
                 <span className="text-background/70 text-sm">
-                  Av. Principais, 1234<br />
-                  Jardim das Indústrias<br />
-                  São José dos Campos - SP
+                  Avenida Independência, 70<br />
+                  Taubaté - SP
                 </span>
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function Footer() {
               Entre em contato para um atendimento exclusivo e personalizado
             </p>
             <div className="space-y-3">
-              <Button variant="gold" className="w-full gap-2">
+              <Button variant="silver" className="w-full gap-2">
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
               </Button>
