@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Properties from "./pages/Properties";
+import PropertyDetail from "./pages/PropertyDetail";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
@@ -28,7 +29,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/sobre" element={<About />} />
-                <Route path="/imoveis" element={<Properties />} />
+          <Route path="/imoveis" element={<Properties />} />
+          <Route path="/imovel/:id" element={<PropertyDetail />} />
                 <Route path="/contato" element={<Contact />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
