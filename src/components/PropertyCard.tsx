@@ -57,12 +57,12 @@ export default function PropertyCard({
 
   if (viewMode === 'list') {
     return (
-      <Card className="group overflow-hidden hover:shadow-md transition-all duration-200 border border-border/50">
-        <div className="flex gap-4 p-4">
+      <Card className="group overflow-hidden hover:shadow-sm transition-all duration-200 border border-border/50">
+        <div className="flex gap-3 p-3">
           {/* Image Section */}
           <div className="flex-shrink-0">
             {/* Main Image */}
-            <div className="relative w-48 h-32 rounded-lg overflow-hidden mb-2">
+            <div className="relative w-32 h-20 rounded overflow-hidden mb-1.5">
               <img 
                 src={images[currentImageIndex]} 
                 alt={title}
@@ -70,33 +70,33 @@ export default function PropertyCard({
               />
               
               {/* Badges */}
-              <div className="absolute top-2 left-2 flex gap-1">
+              <div className="absolute top-1 left-1 flex gap-1">
                 {isNew && (
-                  <Badge variant="default" className="bg-green-600 text-white text-xs py-0 px-1.5 h-5">
+                  <Badge variant="default" className="bg-green-600 text-white text-[10px] py-0 px-1 h-4">
                     NOVO
                   </Badge>
                 )}
                 {exclusive && (
-                  <Badge variant="outline" className="bg-background/90 text-foreground border-accent text-xs py-0 px-1.5 h-5">
+                  <Badge variant="outline" className="bg-background/90 text-foreground border-accent text-[10px] py-0 px-1 h-4">
                     EXCLUSIVO
                   </Badge>
                 )}
               </div>
 
               {/* Price overlay */}
-              <div className="absolute bottom-2 left-2">
-                <p className="text-background font-bold text-sm drop-shadow-sm">
+              <div className="absolute bottom-1 left-1">
+                <p className="text-background font-bold text-xs drop-shadow-sm">
                   {price}
                 </p>
               </div>
             </div>
             
-            {/* Image Thumbnails Grid */}
-            <div className="grid grid-cols-3 gap-1">
-              {images.slice(0, 3).map((image, index) => (
+            {/* Image Thumbnails Grid 2x2 */}
+            <div className="grid grid-cols-2 gap-1">
+              {images.slice(0, 4).map((image, index) => (
                 <div
                   key={index}
-                  className={`relative w-15 h-10 rounded cursor-pointer overflow-hidden border-2 transition-all ${
+                  className={`relative w-10 h-8 rounded cursor-pointer overflow-hidden border transition-all ${
                     index === currentImageIndex ? 'border-primary' : 'border-transparent hover:border-gray-300'
                   }`}
                   onClick={() => setCurrentImageIndex(index)}
@@ -106,9 +106,9 @@ export default function PropertyCard({
                     alt={`${title} ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
-                  {images.length > 3 && index === 2 && (
+                  {images.length > 4 && index === 3 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="text-white text-xs font-semibold">+{images.length - 3}</span>
+                      <span className="text-white text-[10px] font-semibold">+{images.length - 4}</span>
                     </div>
                   )}
                 </div>
@@ -118,11 +118,11 @@ export default function PropertyCard({
 
           {/* Content Section */}
           <div className="flex-1 min-w-0">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {/* Title and Location */}
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-lg text-foreground line-clamp-1">
+                  <h3 className="font-semibold text-base text-foreground line-clamp-1">
                     {title}
                   </h3>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -130,24 +130,24 @@ export default function PropertyCard({
                     <span className="font-medium">{code}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <p className="text-muted-foreground text-sm line-clamp-1">{location}</p>
+                  <p className="text-muted-foreground text-xs line-clamp-1">{location}</p>
                 </div>
               </div>
 
               {/* Property specs in compact row */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Square className="h-3 w-3" />
                   <span className="font-medium">{area}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Bed className="h-3 w-3" />
-                  <span>{bedrooms} dorms</span>
+                  <span>{bedrooms}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] bg-muted px-1 py-0.5 rounded">
                     {suites} suítes
                   </span>
                 </div>
@@ -162,38 +162,38 @@ export default function PropertyCard({
               </div>
 
               {/* Features and Buttons Row */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex gap-2">
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex gap-1">
                   {virtualTour && (
-                    <Badge variant="outline" className="text-xs gap-1 py-0 px-2 h-6">
+                    <Badge variant="outline" className="text-[10px] gap-1 py-0 px-1.5 h-5">
                       <Play className="h-2 w-2" />
-                      Tour Virtual
+                      Tour
                     </Badge>
                   )}
                   {gatedCommunity && (
-                    <Badge variant="outline" className="text-xs gap-1 py-0 px-2 h-6">
+                    <Badge variant="outline" className="text-[10px] gap-1 py-0 px-1.5 h-5">
                       <Shield className="h-2 w-2" />
-                      Condomínio
+                      Cond.
                     </Badge>
                   )}
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   {virtualTour && (
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="text-xs h-7 px-3"
+                      className="text-[10px] h-6 px-2"
                       onClick={() => console.log('Open virtual tour')}
                     >
-                      <Play className="h-3 w-3 mr-1" />
+                      <Play className="h-2 w-2 mr-1" />
                       Tour
                     </Button>
                   )}
                   <Button 
                     variant="default" 
                     size="sm"
-                    className="text-xs h-7 px-4"
+                    className="text-[10px] h-6 px-3"
                     onClick={() => window.location.href = `/imovel/${id}`}
                   >
                     Ver Detalhes

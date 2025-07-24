@@ -256,7 +256,7 @@ export default function Properties() {
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {currentProperties.map((property) => (
                 <PropertyCard key={property.id} {...property} viewMode="list" />
               ))}
