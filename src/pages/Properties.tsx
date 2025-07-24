@@ -154,7 +154,7 @@ export default function Properties() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
   
-  const itemsPerPage = 6;
+  const itemsPerPage = 12;
   const totalPages = Math.ceil(allProperties.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -256,7 +256,7 @@ export default function Properties() {
               ))}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-3">
               {currentProperties.map((property) => (
                 <PropertyCard key={property.id} {...property} viewMode="list" />
               ))}
