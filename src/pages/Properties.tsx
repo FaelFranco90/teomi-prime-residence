@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import SearchForm from "@/components/SearchForm";
 import PropertyCard from "@/components/PropertyCard";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Grid3X3, List, SlidersHorizontal, MessageCircle, ArrowUpDown } from "lucide-react";
+import { SlidersHorizontal, MessageCircle, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
@@ -149,7 +149,6 @@ const allProperties = [
 ];
 
 export default function Properties() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
@@ -211,57 +210,28 @@ export default function Properties() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="gap-2 lg:hidden"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filtros
-                </Button>
-                
-                <div className="flex items-center border border-border rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-r-none"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2 lg:hidden"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filtros
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Properties Grid */}
+      {/* Properties List */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-6">
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {currentProperties.map((property) => (
-                <PropertyCard key={property.id} {...property} viewMode="grid" />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {currentProperties.map((property) => (
-                <PropertyCard key={property.id} {...property} viewMode="list" />
-              ))}
-            </div>
-          )}
+          <div className="space-y-4">
+            {currentProperties.map((property) => (
+              <PropertyCard key={property.id} {...property} viewMode="list" />
+            ))}
+          </div>
         </div>
       </section>
 
