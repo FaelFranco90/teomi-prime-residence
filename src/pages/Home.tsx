@@ -92,18 +92,18 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/40" />
         </div>
         
-        <div className="relative z-10 text-center text-background max-w-4xl mx-auto px-6">
+        <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
           <h1 className="font-serif text-5xl md:text-7xl font-bold mb-6">
             Exclusividade <span className="text-accent">Absoluta</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-white/90">
             Imóveis de altíssimo padrão com atendimento consultivo, discrição e segurança total
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="gold" size="lg" className="text-lg px-8 py-6">
               Explorar Imóveis
             </Button>
-            <Button variant="elegant" size="lg" className="text-lg px-8 py-6 bg-background/20 hover:bg-background/30 text-background border-background">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50">
               Agendar Atendimento
             </Button>
           </div>
@@ -182,17 +182,17 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section className="py-16 bg-luxury-dark text-background">
+      <section className="py-16 bg-secondary">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6 text-foreground">
                 Bem-vindo à <span className="text-accent">Teomi Prime</span>
               </h2>
-              <p className="text-lg mb-6 opacity-90">
+              <p className="text-lg mb-6 text-foreground">
                 Exclusividade, Confiança e Discrição no Mercado de Altíssimo Padrão
               </p>
-              <p className="mb-6 opacity-80">
+              <p className="mb-6 text-muted-foreground">
                 Na Teomi Prime, acreditamos que negócios extraordinários exigem mais do que competência: 
                 exigem discrição absoluta, atendimento personalizado e total segurança para todas as partes envolvidas.
               </p>
@@ -252,9 +252,9 @@ export default function Home() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-background">
+                  <div className="absolute bottom-4 left-4 text-white">
                     <h3 className="font-serif text-lg font-semibold">{neighborhood.name}</h3>
-                    <p className="text-sm opacity-90">{neighborhood.count}</p>
+                    <p className="text-sm text-white/90">{neighborhood.count}</p>
                   </div>
                 </div>
               </Card>
