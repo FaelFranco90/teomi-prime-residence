@@ -255,8 +255,6 @@ export default function Properties() {
       </section>
 
       {/* WhatsApp Floating Button */}
-      <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-luxury bg-green-600 hover:bg-green-700 z-50" onClick={() => window.open('https://wa.me/5512999999999', '_blank')}>
-        <MessageCircle className="h-6 w-6 text-white" />
-      </Button>
+      
     </div>;
 }
