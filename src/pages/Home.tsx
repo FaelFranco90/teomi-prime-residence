@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SearchForm from "@/components/SearchForm";
@@ -81,12 +82,17 @@ const propertyTypes = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
   const { 
     filters, 
     updateFilter, 
     clearFilters, 
     hasActiveFilters 
   } = usePropertyFilters(allProperties);
+
+  const handleSearch = () => {
+    navigate('/properties');
+  };
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -108,10 +114,20 @@ export default function Home() {
             Imóveis de altíssimo padrão com atendimento consultivo, discrição e segurança total
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="gold" size="lg" className="text-lg px-8 py-6">
+            <Button 
+              variant="gold" 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={() => navigate('/properties')}
+            >
               Explorar Imóveis
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+              onClick={() => navigate('/contact')}
+            >
               Agendar Atendimento
             </Button>
           </div>
@@ -133,6 +149,7 @@ export default function Home() {
             filters={filters}
             onFilterChange={updateFilter}
             onClearFilters={clearFilters}
+            onSearch={handleSearch}
             hasActiveFilters={hasActiveFilters}
           />
         </div>
@@ -181,7 +198,11 @@ export default function Home() {
                 Propriedades exclusivas selecionadas especialmente para você
               </p>
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => navigate('/properties')}
+            >
               Ver Todos <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -227,7 +248,12 @@ export default function Home() {
                   <span className="text-sm">Segurança Jurídica</span>
                 </div>
               </div>
-              <Button variant="gold" size="lg" className="gap-2">
+              <Button 
+                variant="gold" 
+                size="lg" 
+                className="gap-2"
+                onClick={() => navigate('/about')}
+              >
                 Conheça Mais <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
