@@ -2,6 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SearchForm from "@/components/SearchForm";
+import { usePropertyFilters } from "@/hooks/usePropertyFilters";
+import { allProperties } from "@/data/properties";
 import PropertyCard from "@/components/PropertyCard";
 import { ArrowRight, Shield, Eye, Users, Award, Home as HomeIcon, Building2, Crown, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-home.jpg";
@@ -79,6 +81,12 @@ const propertyTypes = [
 ];
 
 export default function Home() {
+  const { 
+    filters, 
+    updateFilter, 
+    clearFilters, 
+    hasActiveFilters 
+  } = usePropertyFilters(allProperties);
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -121,7 +129,12 @@ export default function Home() {
               Use nossos filtros avançados para descobrir propriedades que atendem exatamente às suas necessidades
             </p>
           </div>
-          <SearchForm />
+          <SearchForm 
+            filters={filters}
+            onFilterChange={updateFilter}
+            onClearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
         </div>
       </section>
 
