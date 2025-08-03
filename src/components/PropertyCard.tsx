@@ -55,6 +55,150 @@ export default function PropertyCard({
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  if (viewMode === 'grid') {
+    return (
+      <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <img 
+            src={images[currentImageIndex]} 
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          
+          {/* Navigation Arrows */}
+          {images.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground h-8 w-8 p-0"
+                onClick={prevImage}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground h-8 w-8 p-0"
+                onClick={nextImage}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex gap-2">
+            {isNew && (
+              <Badge variant="default" className="bg-green-600 text-white text-sm">
+                NOVO
+              </Badge>
+            )}
+            {featured && (
+              <Badge variant="default" className="bg-accent text-accent-foreground text-sm">
+                DESTAQUE
+              </Badge>
+            )}
+            {exclusive && (
+              <Badge variant="outline" className="bg-background/90 text-foreground border-accent text-sm">
+                EXCLUSIVO
+              </Badge>
+            )}
+          </div>
+
+          {/* Price overlay */}
+          <div className="absolute bottom-3 left-3">
+            <p className="text-background font-serif text-xl font-bold drop-shadow-lg">
+              {price}
+            </p>
+            <p className="text-background/90 text-xs font-medium drop-shadow">
+              Cód: {code}
+            </p>
+          </div>
+        </div>
+
+        <CardContent className="p-4">
+          {/* Title and Location */}
+          <div className="mb-3">
+            <h3 className="font-serif text-lg font-bold text-foreground line-clamp-2 mb-1">
+              {title}
+            </h3>
+            <div className="flex items-center gap-1">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <p className="text-muted-foreground text-sm">{location}</p>
+            </div>
+          </div>
+
+          {/* Property specs */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Square className="h-4 w-4 text-primary" />
+              <span>{area}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Bed className="h-4 w-4 text-primary" />
+              <span>{bedrooms} quartos</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Bath className="h-4 w-4 text-primary" />
+              <span>{bathrooms} banheiros</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Car className="h-4 w-4 text-primary" />
+              <span>{parking} vagas</span>
+            </div>
+          </div>
+
+          {/* Suites and features */}
+          <div className="flex items-center justify-between mb-3">
+            <Badge variant="secondary" className="text-xs px-2 py-1">
+              <Star className="h-3 w-3 mr-1" />
+              {suites} Suítes
+            </Badge>
+            <div className="flex gap-1">
+              {virtualTour && (
+                <Badge variant="outline" className="text-xs gap-1 px-2 py-1">
+                  <Play className="h-3 w-3" />
+                  Tour
+                </Badge>
+              )}
+              {gatedCommunity && (
+                <Badge variant="outline" className="text-xs gap-1 px-2 py-1">
+                  <Shield className="h-3 w-3" />
+                  Seguro
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => window.location.href = `/imovel/${id}`}
+            >
+              Ver Detalhes
+            </Button>
+            {virtualTour && (
+              <Button 
+                variant="default" 
+                size="sm"
+                className="gap-1 text-xs"
+                onClick={() => console.log('Open virtual tour')}
+              >
+                <Play className="h-3 w-3" />
+                Tour
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // List mode (original layout)
   return (
     <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
       <div className="flex gap-6 p-6">
