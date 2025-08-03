@@ -91,7 +91,7 @@ export default function Home() {
   } = usePropertyFilters(allProperties);
 
   const handleSearch = () => {
-    navigate('/properties');
+    navigate('/imoveis');
   };
   return (
     <div className="min-h-screen">
@@ -118,7 +118,7 @@ export default function Home() {
               variant="gold" 
               size="lg" 
               className="text-lg px-8 py-6"
-              onClick={() => navigate('/properties')}
+              onClick={() => navigate('/imoveis')}
             >
               Explorar Imóveis
             </Button>
@@ -126,7 +126,7 @@ export default function Home() {
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-              onClick={() => navigate('/contact')}
+              onClick={() => navigate('/contato')}
             >
               Agendar Atendimento
             </Button>
@@ -201,7 +201,7 @@ export default function Home() {
             <Button 
               variant="outline" 
               className="gap-2"
-              onClick={() => navigate('/properties')}
+              onClick={() => navigate('/imoveis')}
             >
               Ver Todos <ArrowRight className="h-4 w-4" />
             </Button>
@@ -252,7 +252,7 @@ export default function Home() {
                 variant="gold" 
                 size="lg" 
                 className="gap-2"
-                onClick={() => navigate('/about')}
+                onClick={() => navigate('/sobre')}
               >
                 Conheça Mais <ArrowRight className="h-4 w-4" />
               </Button>
