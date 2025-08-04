@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,48 +20,14 @@ import {
   Mail,
   MessageCircle
 } from "lucide-react";
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
+import { useSupabaseProperties, Property } from "@/hooks/useSupabaseProperties";
 
-// Mock property data (in a real app, this would come from an API)
-const propertyData = {
-  "1": {
-    id: "1",
-    code: "TP001",
-    title: "Penthouse Exclusivo Vista Panorâmica",
-    location: "Alphaville, São José dos Campos",
-    price: "R$ 2.800.000",
-    area: "280m²",
-    bedrooms: 4,
-    bathrooms: 5,
-    suites: 3,
-    parking: 3,
-    images: [property1, property2, property3],
-    featured: true,
-    exclusive: true,
-    virtualTour: true,
-    gatedCommunity: true,
-    isNew: false,
-    description: "Penthouse exclusivo com vista panorâmica da cidade. Este imóvel de altíssimo padrão oferece acabamentos de primeira linha, amplos espaços integrados e terraço gourmet com piscina privativa. Localizado no coração do Alphaville, oferece total privacidade e segurança.",
-    features: [
-      "Piscina privativa no terraço",
-      "Churrasqueira gourmet",
-      "Home theater",
-      "Adega climatizada",
-      "Aquecimento central",
-      "Sistema de som ambiente",
-      "Elevador privativo",
-      "3 vagas cobertas",
-      "Depósito privativo",
-      "Vista panorâmica"
-    ]
-  }
-};
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -69,7 +35,31 @@ export default function PropertyDetail() {
     message: ''
   });
 
-  const property = propertyData[id as keyof typeof propertyData];
+  const { getPropertyById } = useSupabaseProperties();
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      const propertyData = await getPropertyById(id);
+      setProperty(propertyData);
+      setLoading(false);
+    };
+
+    fetchProperty();
+  }, [id, getPropertyById]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Carregando imóvel...</h1>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!property) {
     return (
@@ -243,7 +233,8 @@ export default function PropertyDetail() {
                 <CardContent className="p-6">
                   <h2 className="font-serif text-2xl font-bold mb-4">Descrição</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    {property.description}
+                    Este magnífico imóvel oferece uma experiência de vida única com acabamentos de primeira qualidade. 
+                    Localizado em uma das melhores regiões, combina sofisticação, conforto e praticidade em um ambiente exclusivo.
                   </p>
                 </CardContent>
               </Card>
@@ -253,12 +244,34 @@ export default function PropertyDetail() {
                 <CardContent className="p-6">
                   <h2 className="font-serif text-2xl font-bold mb-4">Características</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {property.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                    {property.gatedCommunity && (
+                      <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-accent rounded-full" />
-                        <span className="text-sm">{feature}</span>
+                        <span className="text-sm">Condomínio fechado</span>
                       </div>
-                    ))}
+                    )}
+                    {property.virtualTour && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-accent rounded-full" />
+                        <span className="text-sm">Tour virtual disponível</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-accent rounded-full" />
+                      <span className="text-sm">Segurança 24h</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-accent rounded-full" />
+                      <span className="text-sm">Área de lazer completa</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-accent rounded-full" />
+                      <span className="text-sm">Acabamentos de luxo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-accent rounded-full" />
+                      <span className="text-sm">Localização privilegiada</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SearchForm from "@/components/SearchForm";
 import { usePropertyFilters } from "@/hooks/usePropertyFilters";
-import { allProperties } from "@/data/properties";
+import { useSupabaseProperties } from "@/hooks/useSupabaseProperties";
 import PropertyCard from "@/components/PropertyCard";
 import { ArrowRight, Shield, Eye, Users, Award, Home as HomeIcon, Building2, Crown, MapPin } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-home.jpg";
@@ -83,12 +83,14 @@ const propertyTypes = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const { properties } = useSupabaseProperties();
+  
   const { 
     filters, 
     updateFilter, 
     clearFilters, 
     hasActiveFilters 
-  } = usePropertyFilters(allProperties);
+  } = usePropertyFilters(properties);
 
   const handleSearch = () => {
     navigate('/imoveis');

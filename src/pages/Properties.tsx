@@ -6,11 +6,13 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePropertyFilters } from "@/hooks/usePropertyFilters";
-import { allProperties } from "@/data/properties";
+import { useSupabaseProperties } from "@/hooks/useSupabaseProperties";
 export default function Properties() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
+  
+  const { properties, loading, error } = useSupabaseProperties();
   
   const { 
     filters, 
@@ -18,7 +20,7 @@ export default function Properties() {
     updateFilter, 
     clearFilters, 
     hasActiveFilters 
-  } = usePropertyFilters(allProperties);
+  } = usePropertyFilters(properties);
 
   // Sort filtered properties
   const sortedProperties = useMemo(() => {
@@ -52,6 +54,28 @@ export default function Properties() {
     clearFilters();
     setCurrentPage(1);
   };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Carregando imóveis...</h1>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Erro ao carregar imóveis</h1>
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-16 bg-luxury-dark text-background">
@@ -86,7 +110,7 @@ export default function Properties() {
                 {sortedProperties.length} imóveis encontrados
                 {hasActiveFilters && (
                   <span className="text-sm font-normal text-muted-foreground ml-2">
-                    (filtrados de {allProperties.length} imóveis)
+                    (filtrados de {properties.length} imóveis)
                   </span>
                 )}
               </h2>
