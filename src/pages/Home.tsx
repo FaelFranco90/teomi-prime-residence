@@ -83,7 +83,7 @@ const propertyTypes = [
 
 export default function Home() {
   const navigate = useNavigate();
-  const { properties } = useSupabaseProperties();
+  const { properties } = useSupabaseProperties(); // Using Supabase properties
   
   const { 
     filters, 
