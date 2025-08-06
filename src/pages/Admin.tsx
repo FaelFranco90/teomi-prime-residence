@@ -5,10 +5,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useSupabaseProperties, Property } from '@/hooks/useSupabaseProperties';
 import { useAuthHook } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { PropertyForm } from '@/components/PropertyForm';
 import { Plus, Edit, Trash2, LogOut, Search } from 'lucide-react';
 
 export default function Admin() {
@@ -20,6 +22,8 @@ export default function Admin() {
   const [typeFilter, setTypeFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
   const [featuredFilter, setFeaturedFilter] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | undefined>(undefined);
 
   useEffect(() => {
     let filtered = properties;
@@ -62,6 +66,33 @@ export default function Admin() {
     if (!confirm('Tem certeza que deseja excluir este imóvel?')) return;
 
     try {
+      // First delete property images from storage and database
+      const { data: images } = await supabase
+        .from('property_images')
+        .select('image_url')
+        .eq('property_id', id);
+
+      if (images) {
+        // Delete from storage
+        const imagePaths = images.map(img => {
+          const url = new URL(img.image_url);
+          return url.pathname.split('/').slice(-2).join('/'); // Get the file path from URL
+        });
+
+        if (imagePaths.length > 0) {
+          await supabase.storage
+            .from('property-images')
+            .remove(imagePaths);
+        }
+
+        // Delete image records
+        await supabase
+          .from('property_images')
+          .delete()
+          .eq('property_id', id);
+      }
+
+      // Delete the property
       const { error } = await supabase
         .from('properties')
         .delete()
@@ -82,6 +113,27 @@ export default function Admin() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleAddProperty = () => {
+    setEditingProperty(undefined);
+    setShowForm(true);
+  };
+
+  const handleEditProperty = (property: Property) => {
+    setEditingProperty(property);
+    setShowForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingProperty(undefined);
+    refetch();
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingProperty(undefined);
   };
 
   const uniqueTypes = [...new Set(properties.map(p => p.propertyType).filter(Boolean))];
@@ -118,7 +170,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Gerenciar Imóveis</h2>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleAddProperty}>
             <Plus className="h-4 w-4" />
             Adicionar Imóvel
           </Button>
@@ -221,7 +273,12 @@ export default function Admin() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="gap-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1"
+                          onClick={() => handleEditProperty(property)}
+                        >
                           <Edit className="h-3 w-3" />
                           Editar
                         </Button>
@@ -249,6 +306,22 @@ export default function Admin() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Property Form Dialog */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingProperty ? 'Editar Imóvel' : 'Adicionar Novo Imóvel'}
+            </DialogTitle>
+          </DialogHeader>
+          <PropertyForm
+            property={editingProperty}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
