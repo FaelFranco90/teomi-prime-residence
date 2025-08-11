@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
+import AccessDenied from "./pages/AccessDenied";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/imovel/:code" element={<PropertyDetail />} />
                 <Route path="/contato" element={<Contact />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/403" element={<AccessDenied />} />
                 <Route path="/admin" element={
                   <ProtectedRoute requireAdmin>
                     <Admin />
