@@ -60,9 +60,10 @@ export default function PropertyCard({
       <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img 
-            src={images[currentImageIndex]} 
+            src={images[currentImageIndex] || '/placeholder.svg'} 
             alt={title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
           {/* Navigation Arrows */}
@@ -206,9 +207,10 @@ export default function PropertyCard({
         <div className="flex-shrink-0">
           <div className="relative w-80 h-60 rounded-lg overflow-hidden">
             <img 
-              src={images[currentImageIndex]} 
+              src={images[currentImageIndex] || '/placeholder.svg'} 
               alt={title}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
             />
             
             {/* Navigation Arrows */}
@@ -278,9 +280,10 @@ export default function PropertyCard({
                   onClick={() => setCurrentImageIndex(index)}
                 >
                   <img 
-                    src={image} 
+                    src={image || '/placeholder.svg'} 
                     alt={`${title} ${index + 1}`}
                     className="w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                   />
                   {images.length > 6 && index === 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

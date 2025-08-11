@@ -141,9 +141,10 @@ export function ImageUpload({
                 <CardContent className="p-0">
                   <div className="relative aspect-square">
                     <img
-                      src={imageUrl}
+                      src={imageUrl || '/placeholder.svg'}
                       alt={`Imagem ${index + 1}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                     />
                     <div className="absolute top-2 left-2">
                       {index === 0 && (

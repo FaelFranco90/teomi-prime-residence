@@ -77,10 +77,12 @@ export default function PropertyDetail() {
   }
 
   const nextImage = () => {
+    if (!property.images || property.images.length <= 1) return;
     setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
   };
 
   const prevImage = () => {
+    if (!property.images || property.images.length <= 1) return;
     setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
   };
 
@@ -108,9 +110,10 @@ export default function PropertyDetail() {
       <section className="relative">
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <img 
-            src={property.images[currentImageIndex]} 
+            src={property.images[currentImageIndex] || '/placeholder.svg'} 
             alt={property.title}
             className="w-full h-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           
@@ -167,11 +170,13 @@ export default function PropertyDetail() {
           </div>
 
           {/* Image Counter */}
-          <div className="absolute bottom-6 right-6 bg-background/20 rounded-lg px-3 py-1">
-            <span className="text-background text-sm">
-              {currentImageIndex + 1} / {property.images.length}
-            </span>
-          </div>
+          {property.images.length > 0 && (
+            <div className="absolute bottom-6 right-6 bg-background/20 rounded-lg px-3 py-1">
+              <span className="text-background text-sm">
+                {currentImageIndex + 1} / {property.images.length}
+              </span>
+            </div>
+          )}
         </div>
       </section>
 

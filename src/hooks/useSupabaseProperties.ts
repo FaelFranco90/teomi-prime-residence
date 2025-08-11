@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { resolveImageUrl } from '@/lib/assetResolver';
 
 export interface PropertyImage {
   id: string;
@@ -78,7 +79,7 @@ const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): 
     parking: supabaseProperty.parking,
     images: supabaseProperty.property_images
       .sort((a, b) => a.order_index - b.order_index)
-      .map(img => img.image_url),
+      .map(img => resolveImageUrl(img.image_url)),
     featured: supabaseProperty.is_featured,
     exclusive: supabaseProperty.is_exclusive,
     virtualTour: supabaseProperty.has_virtual_tour,
@@ -124,7 +125,7 @@ export const useSupabaseProperties = () => {
       setProperties(convertedProperties);
     } catch (err) {
       console.error('Error fetching properties:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch properties');
+      setError(err instanceof Error ? err.message : 'Falha ao buscar imóveis');
     } finally {
       setLoading(false);
     }
@@ -145,7 +146,7 @@ export const useSupabaseProperties = () => {
           )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
