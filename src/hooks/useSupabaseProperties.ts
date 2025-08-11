@@ -58,6 +58,10 @@ export interface Property {
 }
 
 const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): Property => {
+  const createdAt = new Date(supabaseProperty.created_at);
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const isNew = Date.now() - createdAt.getTime() <= THIRTY_DAYS_MS;
+
   return {
     id: supabaseProperty.id,
     code: supabaseProperty.code,
@@ -76,7 +80,7 @@ const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): 
     exclusive: supabaseProperty.is_exclusive,
     virtualTour: supabaseProperty.has_virtual_tour,
     gatedCommunity: supabaseProperty.is_gated_community,
-    isNew: supabaseProperty.is_new,
+    isNew,
     propertyType: supabaseProperty.property_type,
     priceNumber: supabaseProperty.price_number,
     areaNumber: supabaseProperty.area_number,

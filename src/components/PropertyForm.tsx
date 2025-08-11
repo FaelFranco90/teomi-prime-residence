@@ -378,10 +378,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
                 <Switch id="is_exclusive" checked={watch('is_exclusive')} onCheckedChange={(checked) => setValue('is_exclusive', checked)} />
                 <Label htmlFor="is_exclusive">Exclusivo</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="is_new" checked={watch('is_new')} onCheckedChange={(checked) => setValue('is_new', checked)} />
-                <Label htmlFor="is_new">Novo</Label>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                O selo "Novo" aparece automaticamente por 30 dias após o cadastro.
+              </p>
               <div className="flex items-center space-x-2">
                 <Switch id="has_virtual_tour" checked={watch('has_virtual_tour')} onCheckedChange={(checked) => setValue('has_virtual_tour', checked)} />
                 <Label htmlFor="has_virtual_tour">Tour virtual</Label>
