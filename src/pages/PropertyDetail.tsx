@@ -37,20 +37,31 @@ export default function PropertyDetail() {
     message: ''
   });
 
-  const { getPropertyByCode } = useSupabaseProperties();
+  const { getPropertyByCode, getPropertyById } = useSupabaseProperties();
 
   useEffect(() => {
     const fetchProperty = async () => {
       if (!code) return;
-      
-      setLoading(true);
-      const propertyData = await getPropertyByCode(code);
-      setProperty(propertyData);
-      setLoading(false);
+      try {
+        setLoading(true);
+        console.log('PropertyDetail: fetching by code param', code);
+        let propertyData = await getPropertyByCode(code);
+        const looksLikeUUID = /^[0-9a-fA-F-]{36}$/.test(code);
+        if (!propertyData && looksLikeUUID) {
+          console.log('PropertyDetail: not found by code, trying by id');
+          propertyData = await getPropertyById(code);
+        }
+        setProperty(propertyData);
+      } catch (err) {
+        console.error('PropertyDetail: failed to load property', err);
+        setProperty(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProperty();
-  }, [code, getPropertyByCode]);
+  }, [code, getPropertyByCode, getPropertyById]);
 
   if (loading) {
     return (
@@ -77,13 +88,15 @@ export default function PropertyDetail() {
   }
 
   const nextImage = () => {
-    if (!property.images || property.images.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
+    const imgs = property?.images ?? [];
+    if (imgs.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev + 1) % imgs.length);
   };
 
   const prevImage = () => {
-    if (!property.images || property.images.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+    const imgs = property?.images ?? [];
+    if (imgs.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,15 +123,15 @@ export default function PropertyDetail() {
       <section className="relative">
         <div className="relative h-96 md:h-[500px] overflow-hidden">
           <img 
-            src={property.images[currentImageIndex] || '/placeholder.svg'} 
-            alt={property.title}
+            src={property.images?.[currentImageIndex] ?? '/placeholder.svg'} 
+            alt={property.title || 'Imóvel'}
             className="w-full h-full object-cover"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           
           {/* Image Navigation */}
-          {property.images.length > 1 && (
+          {(property.images?.length ?? 0) > 1 && (
             <>
               <Button
                 variant="ghost"
@@ -155,25 +168,25 @@ export default function PropertyDetail() {
               )}
             </div>
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-background mb-2">
-              {property.title}
+              {property.title || 'Imóvel'}
             </h1>
             <div className="flex items-center gap-2 text-background/90 mb-2">
               <MapPin className="h-5 w-5" />
-              <span className="text-lg">{property.location}</span>
+              <span className="text-lg">{property.location || 'Localização não informada'}</span>
             </div>
             <p className="font-serif text-2xl font-bold text-background">
-              {property.price}
+              {property.price || 'Sob consulta'}
             </p>
             <p className="text-background/80 font-medium">
-              Código: {property.code}
+              Código: {property.code || '—'}
             </p>
           </div>
 
           {/* Image Counter */}
-          {property.images.length > 0 && (
+          {(property.images?.length ?? 0) > 0 && (
             <div className="absolute bottom-6 right-6 bg-background/20 rounded-lg px-3 py-1">
               <span className="text-background text-sm">
-                {currentImageIndex + 1} / {property.images.length}
+                {currentImageIndex + 1} / {property.images?.length ?? 0}
               </span>
             </div>
           )}
@@ -193,22 +206,22 @@ export default function PropertyDetail() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div className="text-center">
                       <Square className="h-8 w-8 mx-auto mb-2 text-accent" />
-                      <p className="text-2xl font-bold">{property.area}</p>
+                      <p className="text-2xl font-bold">{property.area || '—'}</p>
                       <p className="text-muted-foreground">Área Total</p>
                     </div>
                     <div className="text-center">
                       <Bed className="h-8 w-8 mx-auto mb-2 text-accent" />
-                      <p className="text-2xl font-bold">{property.bedrooms}</p>
+                      <p className="text-2xl font-bold">{property.bedrooms ?? 0}</p>
                       <p className="text-muted-foreground">Dormitórios</p>
                     </div>
                     <div className="text-center">
                       <Bath className="h-8 w-8 mx-auto mb-2 text-accent" />
-                      <p className="text-2xl font-bold">{property.bathrooms}</p>
+                      <p className="text-2xl font-bold">{property.bathrooms ?? 0}</p>
                       <p className="text-muted-foreground">Banheiros</p>
                     </div>
                     <div className="text-center">
                       <Car className="h-8 w-8 mx-auto mb-2 text-accent" />
-                      <p className="text-2xl font-bold">{property.parking}</p>
+                      <p className="text-2xl font-bold">{property.parking ?? 0}</p>
                       <p className="text-muted-foreground">Vagas</p>
                     </div>
                   </div>
@@ -217,7 +230,7 @@ export default function PropertyDetail() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Suítes:</span>
-                      <span className="font-semibold">{property.suites}</span>
+                      <span className="font-semibold">{property.suites ?? 0}</span>
                     </div>
                     {property.virtualTour && (
                       <div className="flex items-center gap-2">

@@ -77,7 +77,7 @@ const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): 
     bathrooms: supabaseProperty.bathrooms,
     suites: supabaseProperty.suites,
     parking: supabaseProperty.parking,
-    images: supabaseProperty.property_images
+    images: (Array.isArray(supabaseProperty.property_images) ? supabaseProperty.property_images : [])
       .sort((a, b) => a.order_index - b.order_index)
       .map(img => resolveImageUrl(img.image_url)),
     featured: supabaseProperty.is_featured,
