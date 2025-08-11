@@ -327,7 +327,7 @@ export default function PropertyDetail() {
                   <div className="space-y-3 mt-6 pt-6 border-t border-border">
                     <Button variant="outline" className="w-full gap-2">
                       <Phone className="h-4 w-4" />
-                      (12) 99999-9999
+                      (12) 99763-5380
                     </Button>
                     
                     <Button variant="outline" className="w-full gap-2">

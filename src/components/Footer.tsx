@@ -71,11 +71,11 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-accent" />
-                <span className="text-white/80 text-sm">(12) 3456-7890</span>
+                <span className="text-white/80 text-sm">(12) 3621-7647</span>
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-accent" />
-                <span className="text-white/80 text-sm">(12) 99999-9999</span>
+                <span className="text-white/80 text-sm">(12) 99763-5380</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-accent" />

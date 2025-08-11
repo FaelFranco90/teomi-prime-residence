@@ -86,7 +86,7 @@ export default function Contact() {
                           value={formData.phone}
                           onChange={handleChange}
                           required
-                          placeholder="(12) 99999-9999"
+                          placeholder="(12) 99763-5380"
                         />
                       </div>
                     </div>
@@ -151,8 +151,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-1">Telefone</h4>
-                      <p className="text-muted-foreground">(12) 3456-7890</p>
-                      <p className="text-muted-foreground">(12) 99999-9999</p>
+                      <p className="text-muted-foreground">(12) 3621-7647</p>
+                      <p className="text-muted-foreground">(12) 99763-5380</p>
                     </div>
                   </div>
 
