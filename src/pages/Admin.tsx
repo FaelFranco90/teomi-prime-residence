@@ -11,7 +11,8 @@ import { useAuthHook } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { PropertyForm } from '@/components/PropertyForm';
-import { Plus, Edit, Trash2, LogOut, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Search, Settings2 } from 'lucide-react';
+import PropertyTypesManager from '@/components/admin/PropertyTypesManager';
 
 export default function Admin() {
   const { properties, loading, refetch } = useSupabaseProperties();
@@ -24,6 +25,7 @@ export default function Admin() {
   const [featuredFilter, setFeaturedFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | undefined>(undefined);
+  const [showTypesManager, setShowTypesManager] = useState(false);
 
   useEffect(() => {
     let filtered = properties;
@@ -66,45 +68,21 @@ export default function Admin() {
     if (!confirm('Tem certeza que deseja excluir este imóvel?')) return;
 
     try {
-      // First delete property images from storage and database
-      const { data: images } = await supabase
-        .from('property_images')
-        .select('image_url')
-        .eq('property_id', id);
-
+      const { data: images } = await supabase.from('property_images').select('image_url').eq('property_id', id);
       if (images) {
-        // Delete from storage
         const imagePaths = images.map(img => {
           const url = new URL(img.image_url);
           return url.pathname.split('/').slice(-2).join('/'); // Get the file path from URL
         });
-
         if (imagePaths.length > 0) {
-          await supabase.storage
-            .from('property-images')
-            .remove(imagePaths);
+          await supabase.storage.from('property-images').remove(imagePaths);
         }
-
-        // Delete image records
-        await supabase
-          .from('property_images')
-          .delete()
-          .eq('property_id', id);
+        await supabase.from('property_images').delete().eq('property_id', id);
       }
-
-      // Delete the property
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('properties').delete().eq('id', id);
       if (error) throw error;
 
-      toast({
-        title: "Imóvel excluído",
-        description: "O imóvel foi removido com sucesso.",
-      });
-      
+      toast({ title: "Imóvel excluído", description: "O imóvel foi removido com sucesso." });
       refetch();
     } catch (error) {
       toast({
@@ -137,9 +115,7 @@ export default function Admin() {
   };
 
   const uniqueTypes = [...new Set(properties.map(p => p.propertyType).filter(Boolean))];
-  const uniqueCities = [...new Set(properties.map(p => 
-    p.location.split(',')[0].trim()
-  ))];
+  const uniqueCities = [...new Set(properties.map(p => p.location.split(',')[0].trim()))];
 
   if (loading) {
     return (
@@ -160,10 +136,16 @@ export default function Admin() {
             <h1 className="text-2xl font-bold">Painel Administrativo</h1>
             <p className="text-muted-foreground">Olá, {user?.email}</p>
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowTypesManager(true)} className="gap-2">
+              <Settings2 className="h-4 w-4" />
+              Gerenciar Tipos
+            </Button>
+            <Button variant="outline" onClick={handleSignOut} className="gap-2">
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -176,7 +158,6 @@ export default function Admin() {
           </Button>
         </div>
 
-        {/* Filtros */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Filtros</CardTitle>
@@ -232,7 +213,6 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* Tabela de Imóveis */}
         <Card>
           <CardHeader>
             <CardTitle>Imóveis Cadastrados ({filteredProperties.length})</CardTitle>
@@ -307,7 +287,6 @@ export default function Admin() {
         </Card>
       </main>
 
-      {/* Property Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -320,6 +299,15 @@ export default function Admin() {
             onSuccess={handleFormSuccess}
             onCancel={handleFormCancel}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTypesManager} onOpenChange={setShowTypesManager}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Tipos de Imóvel</DialogTitle>
+          </DialogHeader>
+          <PropertyTypesManager onClose={() => setShowTypesManager(false)} />
         </DialogContent>
       </Dialog>
     </div>

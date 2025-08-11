@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/hooks/useSupabaseProperties';
 import { ImageUpload } from './ImageUpload';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wand2 } from 'lucide-react';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 const propertySchema = z.object({
   code: z.string().min(1, 'Código é obrigatório'),
@@ -21,7 +22,7 @@ const propertySchema = z.object({
   location: z.string().min(1, 'Localização é obrigatória'),
   price: z.string().min(1, 'Preço é obrigatório'),
   area: z.string().min(1, 'Área é obrigatória'),
-  property_type: z.string().optional(),
+  property_type: z.string().min(1, 'Tipo é obrigatório'),
   description: z.string().optional(),
   bedrooms: z.number().min(0).default(0),
   bathrooms: z.number().min(0).default(0),
@@ -42,20 +43,13 @@ interface PropertyFormProps {
   onCancel: () => void;
 }
 
-const propertyTypes = [
-  { value: 'apartamento', label: 'Apartamento' },
-  { value: 'casa', label: 'Casa' },
-  { value: 'cobertura', label: 'Cobertura' },
-  { value: 'penthouse', label: 'Penthouse' },
-  { value: 'mansao', label: 'Mansão' },
-  { value: 'terreno', label: 'Terreno' },
-];
-
 export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProps) {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(property?.images || []);
   const { toast } = useToast();
+  const { types, loading: typesLoading } = usePropertyTypes();
+  const [previewCode, setPreviewCode] = useState<string | null>(null);
 
   const {
     register,
@@ -95,6 +89,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     }
   });
 
+  const selectedType = watch('property_type');
+  const currentCode = watch('code');
+
   const convertPriceToNumber = (priceStr: string): number => {
     if (priceStr === "Sob Consulta") return 0;
     return parseInt(priceStr.replace(/[^\d]/g, ''));
@@ -104,9 +101,59 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     return parseInt(areaStr.replace(/[^\d]/g, ''));
   };
 
+  const fetchPreviewCode = async (typeKeyOrLabel: string) => {
+    if (!typeKeyOrLabel) {
+      setPreviewCode(null);
+      return;
+    }
+    const { data, error } = await supabase.rpc('preview_next_property_code', { _property_type: typeKeyOrLabel });
+    if (error) {
+      console.error('Erro ao pré-visualizar código:', error);
+      setPreviewCode(null);
+      return;
+    }
+    setPreviewCode(data ?? null);
+
+    // Se for criação e o campo código estiver vazio, preenche automaticamente
+    if (!property && !currentCode && data) {
+      setValue('code', data);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedType) {
+      fetchPreviewCode(selectedType);
+    } else {
+      setPreviewCode(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType]);
+
   const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
     try {
+      // Validação de duplicidade de código (amigável)
+      const { data: existing, error: existingErr } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('code', data.code)
+        .maybeSingle();
+
+      if (existingErr && existingErr.code !== 'PGRST116') {
+        // PGRST116 => No rows found for maybeSingle; ignoramos
+        throw existingErr;
+      }
+
+      if (existing && (!property || existing.id !== property.id)) {
+        toast({
+          title: 'Código já existe',
+          description: `O código ${data.code} já está em uso. Escolha outro.`,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
       const propertyData = {
         code: data.code,
         title: data.title,
@@ -140,7 +187,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         if (error) throw error;
         propertyId = property.id;
       } else {
-        // Create new property
+        // Create new property (gatilho no banco definirá code se vier vazio)
         const { data: newProperty, error } = await supabase
           .from('properties')
           .insert(propertyData)
@@ -178,32 +225,17 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     const uploadPromises = images.map(async (image, index) => {
       const fileName = `${propertyId}_${Date.now()}_${index}.${image.name.split('.').pop()}`;
       const filePath = `imoveis/${propertyId}/${fileName}`;
-
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('property-images')
-        .upload(filePath, image);
-
+      const { error: uploadError } = await supabase.storage.from('property-images').upload(filePath, image);
       if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('property-images')
-        .getPublicUrl(filePath);
-
-      // Save image record to database
-      const { error: dbError } = await supabase
-        .from('property_images')
-        .insert({
-          property_id: propertyId,
-          image_url: publicUrl,
-          is_primary: index === 0,
-          order_index: index,
-        });
-
+      const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
+      const { error: dbError } = await supabase.from('property_images').insert({
+        property_id: propertyId,
+        image_url: publicUrl,
+        is_primary: index === 0,
+        order_index: index,
+      });
       if (dbError) throw dbError;
     });
-
     await Promise.all(uploadPromises);
   };
 
@@ -221,191 +253,147 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="code">Código *</Label>
-              <Input
-                id="code"
-                {...register('code')}
-                placeholder="Ex: TP001"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="code"
+                  {...register('code')}
+                  placeholder="Ex: CA0001"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    if (selectedType && previewCode) {
+                      setValue('code', previewCode);
+                      toast({ title: 'Código sugerido aplicado', description: previewCode });
+                    } else if (!selectedType) {
+                      toast({ title: 'Selecione um tipo', description: 'Escolha o tipo para sugerir o código.', variant: 'destructive' });
+                    } else {
+                      toast({ title: 'Nenhuma sugestão disponível', description: 'Não foi possível obter uma sugestão.' });
+                    }
+                  }}
+                >
+                  <Wand2 className="h-4 w-4" />
+                  Sugerir
+                </Button>
+              </div>
               {errors.code && (
                 <p className="text-sm text-destructive">{errors.code.message}</p>
               )}
+              {selectedType && previewCode && (
+                <p className="text-xs text-muted-foreground">Próximo código sugerido para "{selectedType}": {previewCode}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="property_type">Tipo de Imóvel</Label>
-              <Select 
-                value={watch('property_type')} 
+              <Label htmlFor="property_type">Tipo de Imóvel *</Label>
+              <Select
+                value={watch('property_type')}
                 onValueChange={(value) => setValue('property_type', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue placeholder={typesLoading ? 'Carregando tipos...' : 'Selecione o tipo'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {propertyTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
+                  {types
+                    .filter((t) => t.active)
+                    .map((t) => (
+                      <SelectItem key={t.id} value={t.key}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
+              {errors.property_type && (
+                <p className="text-sm text-destructive">{errors.property_type.message}</p>
+              )}
             </div>
           </div>
 
+          {/* Título */}
           <div className="space-y-2">
             <Label htmlFor="title">Título *</Label>
-            <Input
-              id="title"
-              {...register('title')}
-              placeholder="Ex: Penthouse Exclusivo Vista Panorâmica"
-            />
-            {errors.title && (
-              <p className="text-sm text-destructive">{errors.title.message}</p>
-            )}
+            <Input id="title" {...register('title')} placeholder="Ex: Penthouse Exclusivo Vista Panorâmica" />
+            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
 
+          {/* Localização */}
           <div className="space-y-2">
             <Label htmlFor="location">Localização *</Label>
-            <Input
-              id="location"
-              {...register('location')}
-              placeholder="Ex: Alphaville, São José dos Campos"
-            />
-            {errors.location && (
-              <p className="text-sm text-destructive">{errors.location.message}</p>
-            )}
+            <Input id="location" {...register('location')} placeholder="Ex: Alphaville, São José dos Campos" />
+            {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
           </div>
 
+          {/* Preço e Área */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price">Preço *</Label>
-              <Input
-                id="price"
-                {...register('price')}
-                placeholder="Ex: R$ 2.800.000 ou Sob Consulta"
-              />
-              {errors.price && (
-                <p className="text-sm text-destructive">{errors.price.message}</p>
-              )}
+              <Input id="price" {...register('price')} placeholder="Ex: R$ 2.800.000 ou Sob Consulta" />
+              {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="area">Área *</Label>
-              <Input
-                id="area"
-                {...register('area')}
-                placeholder="Ex: 280m²"
-              />
-              {errors.area && (
-                <p className="text-sm text-destructive">{errors.area.message}</p>
-              )}
+              <Input id="area" {...register('area')} placeholder="Ex: 280m²" />
+              {errors.area && <p className="text-sm text-destructive">{errors.area.message}</p>}
             </div>
           </div>
 
-          {/* Property Details */}
+          {/* Detalhes */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bedrooms">Quartos</Label>
-              <Input
-                id="bedrooms"
-                type="number"
-                min="0"
-                {...register('bedrooms', { valueAsNumber: true })}
-              />
+              <Input id="bedrooms" type="number" min="0" {...register('bedrooms', { valueAsNumber: true })} />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="bathrooms">Banheiros</Label>
-              <Input
-                id="bathrooms"
-                type="number"
-                min="0"
-                {...register('bathrooms', { valueAsNumber: true })}
-              />
+              <Input id="bathrooms" type="number" min="0" {...register('bathrooms', { valueAsNumber: true })} />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="suites">Suítes</Label>
-              <Input
-                id="suites"
-                type="number"
-                min="0"
-                {...register('suites', { valueAsNumber: true })}
-              />
+              <Input id="suites" type="number" min="0" {...register('suites', { valueAsNumber: true })} />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="parking">Vagas</Label>
-              <Input
-                id="parking"
-                type="number"
-                min="0"
-                {...register('parking', { valueAsNumber: true })}
-              />
+              <Input id="parking" type="number" min="0" {...register('parking', { valueAsNumber: true })} />
             </div>
           </div>
 
+          {/* Descrição */}
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              {...register('description')}
-              placeholder="Descrição detalhada do imóvel..."
-              rows={4}
-            />
+            <Textarea id="description" {...register('description')} placeholder="Descrição detalhada do imóvel..." rows={4} />
           </div>
 
-          {/* Features */}
+          {/* Características */}
           <div className="space-y-4">
             <Label>Características</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_featured"
-                  checked={watch('is_featured')}
-                  onCheckedChange={(checked) => setValue('is_featured', checked)}
-                />
+                <Switch id="is_featured" checked={watch('is_featured')} onCheckedChange={(checked) => setValue('is_featured', checked)} />
                 <Label htmlFor="is_featured">Imóvel em destaque</Label>
               </div>
-
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_exclusive"
-                  checked={watch('is_exclusive')}
-                  onCheckedChange={(checked) => setValue('is_exclusive', checked)}
-                />
+                <Switch id="is_exclusive" checked={watch('is_exclusive')} onCheckedChange={(checked) => setValue('is_exclusive', checked)} />
                 <Label htmlFor="is_exclusive">Exclusivo</Label>
               </div>
-
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_new"
-                  checked={watch('is_new')}
-                  onCheckedChange={(checked) => setValue('is_new', checked)}
-                />
+                <Switch id="is_new" checked={watch('is_new')} onCheckedChange={(checked) => setValue('is_new', checked)} />
                 <Label htmlFor="is_new">Novo</Label>
               </div>
-
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="has_virtual_tour"
-                  checked={watch('has_virtual_tour')}
-                  onCheckedChange={(checked) => setValue('has_virtual_tour', checked)}
-                />
+                <Switch id="has_virtual_tour" checked={watch('has_virtual_tour')} onCheckedChange={(checked) => setValue('has_virtual_tour', checked)} />
                 <Label htmlFor="has_virtual_tour">Tour virtual</Label>
               </div>
-
               <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_gated_community"
-                  checked={watch('is_gated_community')}
-                  onCheckedChange={(checked) => setValue('is_gated_community', checked)}
-                />
+                <Switch id="is_gated_community" checked={watch('is_gated_community')} onCheckedChange={(checked) => setValue('is_gated_community', checked)} />
                 <Label htmlFor="is_gated_community">Condomínio fechado</Label>
               </div>
             </div>
           </div>
 
-          {/* Image Upload */}
+          {/* Upload de Imagens */}
           <div className="space-y-4">
             <Label>Imagens do Imóvel</Label>
             <ImageUpload
@@ -416,14 +404,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             />
           </div>
 
-          {/* Actions */}
+          {/* Ações */}
           <div className="flex justify-end space-x-4 pt-6">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onCancel}
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>

@@ -166,6 +166,27 @@ export type Database = {
         }
         Relationships: []
       }
+      property_code_sequences: {
+        Row: {
+          created_at: string
+          last_value: number
+          prefix: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          last_value?: number
+          prefix: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          last_value?: number
+          prefix?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       property_images: {
         Row: {
           created_at: string
@@ -201,12 +222,52 @@ export type Database = {
           },
         ]
       }
+      property_types: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          key: string
+          label: string
+          order_index: number
+          prefix: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          order_index?: number
+          prefix: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          order_index?: number
+          prefix?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      next_property_code: {
+        Args: { _property_type: string }
+        Returns: string
+      }
+      preview_next_property_code: {
+        Args: { _property_type: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
