@@ -55,9 +55,6 @@ export default function Header() {
           </div>
           
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-4">
-            <Button variant="ghost" size="icon">
-              <Search className="h-5 w-5" />
-            </Button>
             <ThemeToggle />
             <Button variant="gold" className="gap-2">
               <MessageCircle className="h-4 w-4" />

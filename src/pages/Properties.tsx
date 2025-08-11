@@ -34,7 +34,8 @@ export default function Properties() {
         return sorted.sort((a, b) => (b.areaNumber || 0) - (a.areaNumber || 0));
       case 'recent':
       default:
-        return sorted.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        // Já buscamos do Supabase ordenado por created_at desc; mantém ordem atual
+        return sorted;
     }
   }, [filteredProperties, sortBy]);
 

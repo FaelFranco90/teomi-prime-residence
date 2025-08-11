@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useSupabaseProperties, Property } from '@/hooks/useSupabaseProperties';
 import { useAuthHook } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -13,11 +14,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { PropertyForm } from '@/components/PropertyForm';
 import { Plus, Edit, Trash2, LogOut, Search, Settings2 } from 'lucide-react';
 import PropertyTypesManager from '@/components/admin/PropertyTypesManager';
+import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
   const { properties, loading, refetch } = useSupabaseProperties();
   const { signOut, user } = useAuthHook();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -26,6 +29,8 @@ export default function Admin() {
   const [showForm, setShowForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | undefined>(undefined);
   const [showTypesManager, setShowTypesManager] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     let filtered = properties;
@@ -62,34 +67,49 @@ export default function Admin() {
       title: "Logout realizado",
       description: "Você foi desconectado com sucesso.",
     });
+    navigate('/');
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este imóvel?')) return;
+  const requestDelete = (id: string) => {
+    setDeletingId(id);
+    setConfirmOpen(true);
+  };
+
+  const performDelete = async () => {
+    if (!deletingId) return;
 
     try {
-      const { data: images } = await supabase.from('property_images').select('image_url').eq('property_id', id);
-      if (images) {
-        const imagePaths = images.map(img => {
-          const url = new URL(img.image_url);
-          return url.pathname.split('/').slice(-2).join('/'); // Get the file path from URL
-        });
+      const { data: images } = await supabase
+        .from('property_images')
+        .select('image_url')
+        .eq('property_id', deletingId);
+
+      if (images && images.length > 0) {
+        const imagePaths = images
+          .map((img) => img.image_url.split('/storage/v1/object/public/property-images/')[1])
+          .filter((p): p is string => !!p);
+
         if (imagePaths.length > 0) {
           await supabase.storage.from('property-images').remove(imagePaths);
         }
-        await supabase.from('property_images').delete().eq('property_id', id);
+
+        await supabase.from('property_images').delete().eq('property_id', deletingId);
       }
-      const { error } = await supabase.from('properties').delete().eq('id', id);
+
+      const { error } = await supabase.from('properties').delete().eq('id', deletingId);
       if (error) throw error;
 
-      toast({ title: "Imóvel excluído", description: "O imóvel foi removido com sucesso." });
+      toast({ title: 'Imóvel excluído', description: 'O imóvel foi removido com sucesso.' });
       refetch();
-    } catch (error) {
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir o imóvel.",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      const msg = typeof err?.message === 'string' ? err.message : '';
+      const description = msg.includes('23503')
+        ? 'Não é possível excluir: registro relacionado.'
+        : 'Não foi possível excluir o imóvel.';
+      toast({ title: 'Erro ao excluir', description, variant: 'destructive' });
+    } finally {
+      setConfirmOpen(false);
+      setDeletingId(null);
     }
   };
 
@@ -266,7 +286,7 @@ export default function Admin() {
                           variant="destructive" 
                           size="sm" 
                           className="gap-1"
-                          onClick={() => handleDelete(property.id)}
+                          onClick={() => requestDelete(property.id)}
                         >
                           <Trash2 className="h-3 w-3" />
                           Excluir
@@ -285,6 +305,20 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação não pode ser desfeita. O imóvel e suas imagens serão removidos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={performDelete}>Excluir</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
