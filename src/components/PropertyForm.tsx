@@ -17,7 +17,7 @@ import { Loader2, Wand2 } from 'lucide-react';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 const propertySchema = z.object({
-  code: z.string().min(1, 'Código é obrigatório'),
+  code: z.string().optional(),
   title: z.string().min(1, 'Título é obrigatório'),
   location: z.string().min(1, 'Localização é obrigatória'),
   price: z.string().min(1, 'Preço é obrigatório'),
@@ -118,11 +118,6 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       return;
     }
     setPreviewCode(data ?? null);
-
-    // Se for criação e o campo código estiver vazio, preenche automaticamente
-    if (!property && !currentCode && data) {
-      setValue('code', data);
-    }
   };
 
   useEffect(() => {
@@ -137,30 +132,32 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
     try {
-      // Validação de duplicidade de código (amigável)
-      const { data: existing, error: existingErr } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('code', data.code)
-        .maybeSingle();
+      // Checagem de duplicidade só quando o usuário informou um código manualmente
+      if (data.code && data.code.trim() !== '') {
+        const { data: existing, error: existingErr } = await supabase
+          .from('properties')
+          .select('id')
+          .eq('code', data.code)
+          .maybeSingle();
 
-      if (existingErr && existingErr.code !== 'PGRST116') {
-        // PGRST116 => No rows found for maybeSingle; ignoramos
-        throw existingErr;
-      }
+        if (existingErr && existingErr.code !== 'PGRST116') {
+          // PGRST116 => No rows found for maybeSingle; ignoramos
+          throw existingErr;
+        }
 
-      if (existing && (!property || existing.id !== property.id)) {
-        toast({
-          title: 'Código já existe',
-          description: `O código ${data.code} já está em uso. Escolha outro.`,
-          variant: 'destructive',
-        });
-        setLoading(false);
-        return;
+        if (existing && (!property || existing.id !== property.id)) {
+          toast({
+            title: 'Código já existe',
+            description: `O código ${data.code} já está em uso. Escolha outro.`,
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
       }
 
       const propertyData = {
-        code: data.code,
+        code: data.code ?? '', // Se vier vazio, o trigger gera automaticamente
         title: data.title,
         location: data.location,
         price: data.price,
@@ -168,15 +165,15 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         property_type: data.property_type,
         description: data.description,
         youtube_video_url: data.youtube_video_url || null,
-        bedrooms: data.bedrooms,
-        bathrooms: data.bathrooms,
-        suites: data.suites,
-        parking: data.parking,
-        is_featured: data.is_featured,
-        is_exclusive: data.is_exclusive,
-        is_new: data.is_new,
-        has_virtual_tour: data.has_virtual_tour,
-        is_gated_community: data.is_gated_community,
+        bedrooms: data.bedrooms ?? 0,
+        bathrooms: data.bathrooms ?? 0,
+        suites: data.suites ?? 0,
+        parking: data.parking ?? 0,
+        is_featured: data.is_featured ?? false,
+        is_exclusive: data.is_exclusive ?? false,
+        is_new: data.is_new ?? false,
+        has_virtual_tour: data.has_virtual_tour ?? false,
+        is_gated_community: data.is_gated_community ?? false,
         price_number: convertPriceToNumber(data.price),
         area_number: convertAreaToNumber(data.area),
       };
@@ -258,12 +255,13 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="code">Código *</Label>
+              <Label htmlFor="code">Código</Label>
               <div className="flex gap-2">
                 <Input
                   id="code"
                   {...register('code')}
-                  placeholder="Ex: CA0001"
+                  placeholder={property ? 'Código do imóvel' : 'Gerado automaticamente ao salvar'}
+                  disabled={!property} // Desabilitado na criação (gerado via trigger)
                 />
                 <Button
                   type="button"
@@ -271,8 +269,14 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
                   className="gap-2"
                   onClick={() => {
                     if (selectedType && previewCode) {
-                      setValue('code', previewCode);
-                      toast({ title: 'Código sugerido aplicado', description: previewCode });
+                      if (property) {
+                        // No modo edição, permitir aplicar a sugestão ao campo (se realmente quiser)
+                        setValue('code', previewCode);
+                        toast({ title: 'Código sugerido aplicado', description: previewCode });
+                      } else {
+                        // Na criação, apenas mostrar a sugestão sem modificar o campo
+                        toast({ title: 'Próximo código sugerido', description: previewCode });
+                      }
                     } else if (!selectedType) {
                       toast({ title: 'Selecione um tipo', description: 'Escolha o tipo para sugerir o código.', variant: 'destructive' });
                     } else {
