@@ -178,7 +178,7 @@ export default function PropertyCard({
               variant="outline" 
               size="sm"
               className="flex-1 text-xs"
-              onClick={() => window.location.href = `/imovel/${id}`}
+              onClick={() => window.location.href = `/imovel/${code}`}
             >
               Ver Detalhes
             </Button>
@@ -381,7 +381,7 @@ export default function PropertyCard({
                   variant="default" 
                   size="default"
                   className="px-6"
-                  onClick={() => window.location.href = `/imovel/${id}`}
+                  onClick={() => window.location.href = `/imovel/${code}`}
                 >
                   Ver Detalhes
                 </Button>

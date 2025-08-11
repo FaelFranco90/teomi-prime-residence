@@ -26,7 +26,7 @@ import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 
 
 export default function PropertyDetail() {
-  const { id } = useParams();
+  const { code } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,20 +37,20 @@ export default function PropertyDetail() {
     message: ''
   });
 
-  const { getPropertyById } = useSupabaseProperties();
+  const { getPropertyByCode } = useSupabaseProperties();
 
   useEffect(() => {
     const fetchProperty = async () => {
-      if (!id) return;
+      if (!code) return;
       
       setLoading(true);
-      const propertyData = await getPropertyById(id);
+      const propertyData = await getPropertyByCode(code);
       setProperty(propertyData);
       setLoading(false);
     };
 
     fetchProperty();
-  }, [id, getPropertyById]);
+  }, [code, getPropertyByCode]);
 
   if (loading) {
     return (

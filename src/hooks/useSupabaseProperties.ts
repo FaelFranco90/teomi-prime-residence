@@ -159,6 +159,34 @@ export const useSupabaseProperties = () => {
     }
   };
 
+  const getPropertyByCode = async (code: string): Promise<Property | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select(`
+          *,
+          property_images (
+            id,
+            property_id,
+            image_url,
+            is_primary,
+            order_index
+          )
+        `)
+        .eq('code', code)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      return data ? convertSupabasePropertyToProperty(data) : null;
+    } catch (err) {
+      console.error('Error fetching property by code:', err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchProperties();
   }, []);
@@ -169,5 +197,6 @@ export const useSupabaseProperties = () => {
     error,
     refetch: fetchProperties,
     getPropertyById,
+    getPropertyByCode,
   };
 };
