@@ -40,28 +40,46 @@ export default function PropertyDetail() {
   const { getPropertyByCode, getPropertyById } = useSupabaseProperties();
 
   useEffect(() => {
+    let active = true;
+
     const fetchProperty = async () => {
       if (!code) return;
+      
       try {
         setLoading(true);
         console.log('PropertyDetail: fetching by code param', code);
+        
         let propertyData = await getPropertyByCode(code);
+        
+        if (!active) return;
+        
         const looksLikeUUID = /^[0-9a-fA-F-]{36}$/.test(code);
         if (!propertyData && looksLikeUUID) {
           console.log('PropertyDetail: not found by code, trying by id');
           propertyData = await getPropertyById(code);
         }
-        setProperty(propertyData);
+        
+        if (active) {
+          setProperty(propertyData);
+        }
       } catch (err) {
         console.error('PropertyDetail: failed to load property', err);
-        setProperty(null);
+        if (active) {
+          setProperty(null);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProperty();
-  }, [code, getPropertyByCode, getPropertyById]);
+    
+    return () => {
+      active = false;
+    };
+  }, [code]);
 
   if (loading) {
     return (

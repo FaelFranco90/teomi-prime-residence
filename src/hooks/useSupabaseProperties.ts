@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { resolveImageUrl } from '@/lib/assetResolver';
 
@@ -172,7 +172,7 @@ export const useSupabaseProperties = () => {
     }
   };
 
-  const getPropertyById = async (id: string): Promise<Property | null> => {
+  const getPropertyById = useCallback(async (id: string): Promise<Property | null> => {
     try {
       const { data, error } = await supabase
         .from('properties')
@@ -198,9 +198,9 @@ export const useSupabaseProperties = () => {
       console.error('Error fetching property:', err);
       return null;
     }
-  };
+  }, []);
 
-  const getPropertyByCode = async (code: string): Promise<Property | null> => {
+  const getPropertyByCode = useCallback(async (code: string): Promise<Property | null> => {
     try {
       const { data, error } = await supabase
         .from('properties')
@@ -226,18 +226,18 @@ export const useSupabaseProperties = () => {
       console.error('Error fetching property by code:', err);
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProperties();
   }, []);
 
-  return {
+  return useMemo(() => ({
     properties,
     loading,
     error,
     refetch: fetchProperties,
     getPropertyById,
     getPropertyByCode,
-  };
+  }), [properties, loading, error, getPropertyById, getPropertyByCode]);
 };
