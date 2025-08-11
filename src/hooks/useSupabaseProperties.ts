@@ -55,6 +55,7 @@ export interface Property {
   propertyType?: string;
   priceNumber: number;
   areaNumber: number;
+  createdAt: string;
 }
 
 const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): Property => {
@@ -84,6 +85,7 @@ const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): 
     propertyType: supabaseProperty.property_type,
     priceNumber: supabaseProperty.price_number,
     areaNumber: supabaseProperty.area_number,
+    createdAt: supabaseProperty.created_at,
   };
 };
 

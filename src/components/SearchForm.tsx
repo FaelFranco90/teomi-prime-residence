@@ -1,11 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { PropertyFilters } from "@/hooks/usePropertyFilters";
+import { usePropertyTypes } from "@/hooks/usePropertyTypes";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SearchFormProps {
   filters: PropertyFilters;
@@ -23,6 +25,22 @@ export default function SearchForm({
   hasActiveFilters 
 }: SearchFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const { types } = usePropertyTypes();
+  const [locations, setLocations] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('location');
+      if (!error && data) {
+        const unique = Array.from(new Set(data.map((d: any) => d.location).filter(Boolean)));
+        unique.sort((a, b) => a.localeCompare(b));
+        setLocations(unique);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-luxury">
@@ -34,13 +52,13 @@ export default function SearchForm({
               <SelectValue placeholder="Tipo de Imóvel" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="casa">Casa</SelectItem>
-              <SelectItem value="apartamento">Apartamento</SelectItem>
-              <SelectItem value="cobertura">Cobertura</SelectItem>
-              <SelectItem value="penthouse">Penthouse</SelectItem>
-              <SelectItem value="mansao">Mansão</SelectItem>
-              <SelectItem value="terreno">Terreno</SelectItem>
-              <SelectItem value="comercial">Comercial</SelectItem>
+              {types
+                .filter((t) => t.active)
+                .map((t) => (
+                  <SelectItem key={t.id} value={t.key}>
+                    {t.label}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 
@@ -49,14 +67,15 @@ export default function SearchForm({
               <SelectValue placeholder="Bairro / Cidade" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Alphaville">Alphaville</SelectItem>
-              <SelectItem value="Campos do Conde">Campos do Conde</SelectItem>
-              <SelectItem value="Altos da Serra">Altos da Serra</SelectItem>
-              <SelectItem value="Vila Adyanna">Vila Adyanna</SelectItem>
-              <SelectItem value="Jardim das Colinas">Jardim das Colinas</SelectItem>
-              <SelectItem value="Vale dos Cristais">Vale dos Cristais</SelectItem>
-              <SelectItem value="Centro">Centro</SelectItem>
-              <SelectItem value="Centro Histórico">Centro Histórico</SelectItem>
+              {locations.length > 0 ? (
+                locations.map((loc) => (
+                  <SelectItem key={loc} value={loc}>
+                    {loc}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="">Carregando locais...</SelectItem>
+              )}
             </SelectContent>
           </Select>
 

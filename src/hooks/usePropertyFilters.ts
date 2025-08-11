@@ -33,6 +33,7 @@ export interface Property {
   propertyType?: string;
   priceNumber?: number;
   areaNumber?: number;
+  createdAt?: string;
 }
 
 const initialFilters: PropertyFilters = {

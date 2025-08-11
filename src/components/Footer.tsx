@@ -9,8 +9,8 @@ const navigation = {
     { name: "Contato", href: "/contato" },
   ],
   social: [
-    { name: "Instagram", href: "#", icon: Instagram },
-    { name: "Facebook", href: "#", icon: Facebook },
+    { name: "Instagram", href: "https://www.instagram.com/teomi.imoveis/", icon: Instagram },
+    { name: "Facebook", href: "https://www.facebook.com/teomi.imoveis/", icon: Facebook },
     { name: "LinkedIn", href: "#", icon: Linkedin },
   ],
 };

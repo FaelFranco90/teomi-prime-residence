@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Upload, Image as ImageIcon, Star } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ImageUploadProps {

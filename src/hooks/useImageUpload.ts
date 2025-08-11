@@ -7,8 +7,11 @@ interface UploadResult {
   path: string;
 }
 
+type UploadProgressMap = Record<string, number>;
+
 export function useImageUpload() {
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<UploadProgressMap>({});
   const { toast } = useToast();
 
   const uploadImage = async (file: File, propertyId: string, index: number): Promise<UploadResult | null> => {
@@ -46,16 +49,35 @@ export function useImageUpload() {
     const results: UploadResult[] = [];
 
     try {
-      const uploadPromises = files.map((file, index) => 
-        uploadImage(file, propertyId, index)
-      );
+      // reset progress
+      const initialProgress: UploadProgressMap = {};
+      files.forEach((f) => (initialProgress[f.name] = 0));
+      setProgress(initialProgress);
+
+      const uploadPromises = files.map(async (file, index) => {
+        // Simulate progress up to 90% while uploading
+        let current = 0;
+        const interval = setInterval(() => {
+          current = Math.min(90, current + Math.floor(Math.random() * 10));
+          setProgress((prev) => ({ ...prev, [file.name]: current }));
+        }, 200);
+
+        const single = await uploadImage(file, propertyId, index);
+        clearInterval(interval);
+
+        if (single) {
+          setProgress((prev) => ({ ...prev, [file.name]: 100 }));
+          return single;
+        } else {
+          setProgress((prev) => ({ ...prev, [file.name]: 0 }));
+          return null;
+        }
+      });
 
       const uploadResults = await Promise.all(uploadPromises);
-      
+
       for (const result of uploadResults) {
-        if (result) {
-          results.push(result);
-        }
+        if (result) results.push(result);
       }
 
       if (results.length !== files.length) {
@@ -131,11 +153,78 @@ export function useImageUpload() {
     }
   };
 
+  const updateImageOrder = async (propertyId: string, imageUrlsInOrder: string[]): Promise<boolean> => {
+    try {
+      const updates = imageUrlsInOrder.map((url, idx) =>
+        supabase.from('property_images')
+          .update({ order_index: idx + 1 })
+          .eq('property_id', propertyId)
+          .eq('image_url', url)
+      );
+      const results = await Promise.all(updates);
+      const anyError = results.find(r => (r as any).error);
+      if (anyError) throw (anyError as any).error;
+      return true;
+    } catch (error) {
+      console.error('Error updating image order:', error);
+      toast({ title: 'Erro ao reordenar', description: 'Tente novamente.', variant: 'destructive' });
+      return false;
+    }
+  };
+
+  const setPrimaryImage = async (propertyId: string, imageUrl: string): Promise<boolean> => {
+    try {
+      // reset all to false
+      const { error: resetErr } = await supabase
+        .from('property_images')
+        .update({ is_primary: false })
+        .eq('property_id', propertyId);
+      if (resetErr) throw resetErr;
+
+      const { error: setErr } = await supabase
+        .from('property_images')
+        .update({ is_primary: true })
+        .eq('property_id', propertyId)
+        .eq('image_url', imageUrl);
+      if (setErr) throw setErr;
+      return true;
+    } catch (error) {
+      console.error('Error setting primary image:', error);
+      toast({ title: 'Erro ao definir principal', description: 'Tente novamente.', variant: 'destructive' });
+      return false;
+    }
+  };
+
+  const ensurePrimaryImage = async (propertyId: string): Promise<void> => {
+    try {
+      const { data, error } = await supabase
+        .from('property_images')
+        .select('id, image_url, order_index, is_primary')
+        .eq('property_id', propertyId);
+      if (error) throw error;
+      const hasPrimary = (data || []).some((d: any) => d.is_primary);
+      if (!hasPrimary && data && data.length > 0) {
+        const first = [...data].sort((a, b) => a.order_index - b.order_index)[0];
+        await supabase
+          .from('property_images')
+          .update({ is_primary: true })
+          .eq('property_id', propertyId)
+          .eq('id', first.id);
+      }
+    } catch (error) {
+      console.error('Error ensuring primary image:', error);
+    }
+  };
+
   return {
     uploading,
+    progress,
     uploadImage,
     uploadMultipleImages,
     deleteImage,
     saveImageRecords,
+    updateImageOrder,
+    setPrimaryImage,
+    ensurePrimaryImage,
   };
 }
