@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminRole } from './useAdminRole';
 
 interface AuthContextType {
   user: User | null;
@@ -26,7 +27,7 @@ export const useAuthHook = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAdmin = user?.email === 'rafael.cunha@teomiimoveis.com.br';
+  const { isAdmin, loading: adminLoading } = useAdminRole(user?.id);
 
   useEffect(() => {
     // Set up auth state listener
@@ -63,7 +64,7 @@ export const useAuthHook = () => {
   return {
     user,
     session,
-    loading,
+    loading: loading || adminLoading,
     signIn,
     signOut,
     isAdmin,
