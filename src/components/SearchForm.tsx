@@ -26,27 +26,45 @@ export default function SearchForm({
 }: SearchFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { types } = usePropertyTypes();
-  const [locations, setLocations] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
+  const [condos, setCondos] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchLocationData = async () => {
       const { data, error } = await supabase
-        .from('properties')
-        .select('location');
+        .from('properties_public')
+        .select('city, neighborhood, condo_name')
+        .eq('is_published', true);
+      
       if (!error && data) {
-        const unique = Array.from(new Set(data.map((d: any) => d.location).filter(Boolean)));
-        unique.sort((a, b) => a.localeCompare(b));
-        setLocations(unique);
+        // Extract unique cities
+        const uniqueCities = Array.from(new Set(
+          data.map((d: any) => d.city).filter(Boolean)
+        )).sort();
+        setCities(uniqueCities);
+
+        // Extract unique neighborhoods
+        const uniqueNeighborhoods = Array.from(new Set(
+          data.map((d: any) => d.neighborhood).filter(Boolean)
+        )).sort();
+        setNeighborhoods(uniqueNeighborhoods);
+
+        // Extract unique condos
+        const uniqueCondos = Array.from(new Set(
+          data.map((d: any) => d.condo_name).filter(Boolean)
+        )).sort();
+        setCondos(uniqueCondos);
       }
     };
-    fetchLocations();
+    fetchLocationData();
   }, []);
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-luxury">
       <CardContent className="p-6">
         {/* Main Search Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
           <Select value={filters.propertyType} onValueChange={(value) => onFilterChange('propertyType', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Tipo de Imóvel" />
@@ -62,19 +80,36 @@ export default function SearchForm({
             </SelectContent>
           </Select>
 
-          <Select value={filters.location} onValueChange={(value) => onFilterChange('location', value)}>
+          <Select value={filters.city} onValueChange={(value) => onFilterChange('city', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Bairro / Cidade" />
+              <SelectValue placeholder="Cidade" />
             </SelectTrigger>
             <SelectContent>
-              {locations.length > 0 ? (
-                locations.map((loc) => (
-                  <SelectItem key={loc} value={loc}>
-                    {loc}
+              {cities.length > 0 ? (
+                cities.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="loading" disabled>Carregando locais...</SelectItem>
+                <SelectItem value="loading" disabled>Carregando cidades...</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+
+          <Select value={filters.neighborhood} onValueChange={(value) => onFilterChange('neighborhood', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Bairro" />
+            </SelectTrigger>
+            <SelectContent>
+              {neighborhoods.length > 0 ? (
+                neighborhoods.map((neighborhood) => (
+                  <SelectItem key={neighborhood} value={neighborhood}>
+                    {neighborhood}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="loading" disabled>Carregando bairros...</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -120,7 +155,24 @@ export default function SearchForm({
 
         {/* Advanced Filters */}
         {showAdvanced && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 pt-4 border-t border-border">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4 pt-4 border-t border-border">
+            <Select value={filters.condoName} onValueChange={(value) => onFilterChange('condoName', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Condomínio" />
+              </SelectTrigger>
+              <SelectContent>
+                {condos.length > 0 ? (
+                  condos.map((condo) => (
+                    <SelectItem key={condo} value={condo}>
+                      {condo}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="loading" disabled>Carregando condomínios...</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+
             <div className="flex gap-2">
               <Input 
                 type="text" 

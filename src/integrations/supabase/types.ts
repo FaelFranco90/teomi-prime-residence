@@ -92,15 +92,26 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       properties: {
         Row: {
+          address: string | null
           area: string
           area_number: number
           bathrooms: number
           bedrooms: number
+          cep: string | null
+          city: string | null
           code: string
+          condo_name: string | null
           created_at: string
           description: string | null
           has_virtual_tour: boolean
@@ -111,21 +122,27 @@ export type Database = {
           is_new: boolean
           is_published: boolean
           location: string
+          neighborhood: string | null
           parking: number
           price: string
           price_number: number
           property_type: string | null
+          state: string | null
           suites: number
           title: string
           updated_at: string
           youtube_video_url: string | null
         }
         Insert: {
+          address?: string | null
           area: string
           area_number?: number
           bathrooms?: number
           bedrooms?: number
+          cep?: string | null
+          city?: string | null
           code: string
+          condo_name?: string | null
           created_at?: string
           description?: string | null
           has_virtual_tour?: boolean
@@ -136,21 +153,27 @@ export type Database = {
           is_new?: boolean
           is_published?: boolean
           location: string
+          neighborhood?: string | null
           parking?: number
           price: string
           price_number?: number
           property_type?: string | null
+          state?: string | null
           suites?: number
           title: string
           updated_at?: string
           youtube_video_url?: string | null
         }
         Update: {
+          address?: string | null
           area?: string
           area_number?: number
           bathrooms?: number
           bedrooms?: number
+          cep?: string | null
+          city?: string | null
           code?: string
+          condo_name?: string | null
           created_at?: string
           description?: string | null
           has_virtual_tour?: boolean
@@ -161,10 +184,12 @@ export type Database = {
           is_new?: boolean
           is_published?: boolean
           location?: string
+          neighborhood?: string | null
           parking?: number
           price?: string
           price_number?: number
           property_type?: string | null
+          state?: string | null
           suites?: number
           title?: string
           updated_at?: string
@@ -226,6 +251,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       property_types: {
@@ -263,7 +295,99 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      properties_public: {
+        Row: {
+          area: string | null
+          area_number: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          cep: string | null
+          city: string | null
+          code: string | null
+          condo_name: string | null
+          created_at: string | null
+          description: string | null
+          has_virtual_tour: boolean | null
+          id: string | null
+          is_exclusive: boolean | null
+          is_featured: boolean | null
+          is_gated_community: boolean | null
+          is_new: boolean | null
+          is_published: boolean | null
+          location: string | null
+          neighborhood: string | null
+          parking: number | null
+          price: string | null
+          price_number: number | null
+          property_type: string | null
+          state: string | null
+          suites: number | null
+          title: string | null
+          updated_at: string | null
+          youtube_video_url: string | null
+        }
+        Insert: {
+          area?: string | null
+          area_number?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          cep?: string | null
+          city?: string | null
+          code?: string | null
+          condo_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          has_virtual_tour?: boolean | null
+          id?: string | null
+          is_exclusive?: boolean | null
+          is_featured?: boolean | null
+          is_gated_community?: boolean | null
+          is_new?: boolean | null
+          is_published?: boolean | null
+          location?: never
+          neighborhood?: string | null
+          parking?: number | null
+          price?: string | null
+          price_number?: number | null
+          property_type?: string | null
+          state?: string | null
+          suites?: number | null
+          title?: string | null
+          updated_at?: string | null
+          youtube_video_url?: string | null
+        }
+        Update: {
+          area?: string | null
+          area_number?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          cep?: string | null
+          city?: string | null
+          code?: string | null
+          condo_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          has_virtual_tour?: boolean | null
+          id?: string | null
+          is_exclusive?: boolean | null
+          is_featured?: boolean | null
+          is_gated_community?: boolean | null
+          is_new?: boolean | null
+          is_published?: boolean | null
+          location?: never
+          neighborhood?: string | null
+          parking?: number | null
+          price?: string | null
+          price_number?: number | null
+          property_type?: string | null
+          state?: string | null
+          suites?: number | null
+          title?: string | null
+          updated_at?: string | null
+          youtube_video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       next_property_code: {

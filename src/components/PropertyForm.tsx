@@ -19,7 +19,12 @@ import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 const propertySchema = z.object({
   code: z.string().optional(),
   title: z.string().min(1, 'Título é obrigatório'),
-  location: z.string().min(1, 'Localização é obrigatória'),
+  city: z.string().min(1, 'Cidade é obrigatória'),
+  neighborhood: z.string().optional(),
+  condo_name: z.string().optional(),
+  address: z.string().optional(),
+  state: z.string().optional(),
+  cep: z.string().optional(),
   price: z.string().min(1, 'Preço é obrigatório'),
   area: z.string().min(1, 'Área é obrigatória'),
   property_type: z.string().min(1, 'Tipo é obrigatório'),
@@ -67,7 +72,12 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     defaultValues: property ? {
       code: property.code,
       title: property.title,
-      location: property.location,
+      city: property.city || '',
+      neighborhood: property.neighborhood || '',
+      condo_name: property.condoName || '',
+      address: property.address || '',
+      state: property.state || '',
+      cep: property.cep || '',
       price: property.price,
       area: property.area,
       property_type: property.propertyType || '',
@@ -162,7 +172,13 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       const propertyData = {
         code: data.code ?? '', // Se vier vazio, o trigger gera automaticamente
         title: data.title,
-        location: data.location,
+        city: data.city,
+        neighborhood: data.neighborhood || null,
+        condo_name: data.condo_name || null,
+        address: data.address || null,
+        state: data.state || null,
+        cep: data.cep || null,
+        location: [data.condo_name, data.neighborhood, data.city].filter(Boolean).join(', '), // Maintain compatibility
         price: data.price,
         area: data.area,
         property_type: data.property_type,
@@ -332,11 +348,49 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
           </div>
 
-          {/* Localização */}
-          <div className="space-y-2">
-            <Label htmlFor="location">Localização *</Label>
-            <Input id="location" {...register('location')} placeholder="Ex: Alphaville, São José dos Campos" />
-            {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
+          {/* Localização Estruturada */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Localização *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade *</Label>
+                <Input id="city" {...register('city')} placeholder="Ex: São José dos Campos" />
+                {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="state">Estado (UF)</Label>
+                <Input id="state" {...register('state')} placeholder="Ex: SP" maxLength={2} />
+                {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood">Bairro</Label>
+                <Input id="neighborhood" {...register('neighborhood')} placeholder="Ex: Alphaville" />
+                {errors.neighborhood && <p className="text-sm text-destructive">{errors.neighborhood.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cep">CEP</Label>
+                <Input id="cep" {...register('cep')} placeholder="Ex: 12345-678" />
+                {errors.cep && <p className="text-sm text-destructive">{errors.cep.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="condo_name">Condomínio</Label>
+                <Input id="condo_name" {...register('condo_name')} placeholder="Ex: Residencial Paradise" />
+                {errors.condo_name && <p className="text-sm text-destructive">{errors.condo_name.message}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">Endereço Completo (APENAS ADMIN)</Label>
+                <Input id="address" {...register('address')} placeholder="Ex: Rua das Palmeiras, 123" />
+                <p className="text-xs text-muted-foreground text-yellow-600">
+                  ⚠️ Este campo NÃO aparece no site público por segurança
+                </p>
+                {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
+              </div>
+            </div>
           </div>
 
           {/* Preço e Área */}

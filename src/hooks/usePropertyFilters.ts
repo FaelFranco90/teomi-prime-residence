@@ -2,7 +2,10 @@ import { useState, useMemo } from 'react';
 
 export interface PropertyFilters {
   propertyType: string;
-  location: string;
+  city: string;
+  neighborhood: string;
+  condoName: string;
+  location: string; // Keep for legacy compatibility
   bedrooms: string;
   suites: string;
   parking: string;
@@ -18,6 +21,9 @@ export interface Property {
   code: string;
   title: string;
   location: string;
+  city?: string;
+  neighborhood?: string;
+  condoName?: string;
   price: string;
   area: string;
   bedrooms: number;
@@ -38,6 +44,9 @@ export interface Property {
 
 const initialFilters: PropertyFilters = {
   propertyType: '',
+  city: '',
+  neighborhood: '',
+  condoName: '',
   location: '',
   bedrooms: '',
   suites: '',
@@ -59,9 +68,31 @@ export function usePropertyFilters(properties: Property[]) {
         return false;
       }
 
-      // Location Filter
-      if (filters.location && !property.location.toLowerCase().includes(filters.location.toLowerCase())) {
+      // City Filter
+      if (filters.city && (!property.city || !property.city.toLowerCase().includes(filters.city.toLowerCase()))) {
         return false;
+      }
+
+      // Neighborhood Filter
+      if (filters.neighborhood && (!property.neighborhood || !property.neighborhood.toLowerCase().includes(filters.neighborhood.toLowerCase()))) {
+        return false;
+      }
+
+      // Condo Name Filter
+      if (filters.condoName && (!property.condoName || !property.condoName.toLowerCase().includes(filters.condoName.toLowerCase()))) {
+        return false;
+      }
+
+      // Legacy Location Filter (searches across all location fields)
+      if (filters.location) {
+        const searchTerm = filters.location.toLowerCase();
+        const matchesLocation = property.location.toLowerCase().includes(searchTerm) ||
+          (property.city && property.city.toLowerCase().includes(searchTerm)) ||
+          (property.neighborhood && property.neighborhood.toLowerCase().includes(searchTerm)) ||
+          (property.condoName && property.condoName.toLowerCase().includes(searchTerm));
+        if (!matchesLocation) {
+          return false;
+        }
       }
 
       // Bedrooms Filter

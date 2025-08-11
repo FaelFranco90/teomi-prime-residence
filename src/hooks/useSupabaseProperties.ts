@@ -15,6 +15,12 @@ export interface SupabaseProperty {
   code: string;
   title: string;
   location: string;
+  city?: string;
+  neighborhood?: string;
+  condo_name?: string;
+  address?: string;
+  state?: string;
+  cep?: string;
   price: string;
   price_number: number;
   area: string;
@@ -42,6 +48,12 @@ export interface Property {
   code: string;
   title: string;
   location: string;
+  city?: string;
+  neighborhood?: string;
+  condoName?: string;
+  address?: string;
+  state?: string;
+  cep?: string;
   price: string;
   area: string;
   bedrooms: number;
@@ -87,6 +99,12 @@ export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProp
       code: supabaseProperty.code || 'N/A',
       title: supabaseProperty.title || 'Imóvel sem título',
       location: supabaseProperty.location || 'Localização não informada',
+      city: supabaseProperty.city || undefined,
+      neighborhood: supabaseProperty.neighborhood || undefined,
+      condoName: supabaseProperty.condo_name || undefined,
+      address: supabaseProperty.address || undefined,
+      state: supabaseProperty.state || undefined,
+      cep: supabaseProperty.cep || undefined,
       price: supabaseProperty.price || 'Preço sob consulta',
       area: supabaseProperty.area || 'N/A',
       bedrooms: supabaseProperty.bedrooms || 0,
@@ -145,7 +163,7 @@ export const useSupabaseProperties = () => {
       setError(null);
 
       const { data, error } = await supabase
-        .from('properties')
+        .from('properties_public')
         .select(`
           *,
           property_images (
@@ -156,7 +174,6 @@ export const useSupabaseProperties = () => {
             order_index
           )
         `)
-        .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -176,7 +193,7 @@ export const useSupabaseProperties = () => {
   const getPropertyById = useCallback(async (id: string): Promise<Property | null> => {
     try {
       const { data, error } = await supabase
-        .from('properties')
+        .from('properties_public')
         .select(`
           *,
           property_images (
@@ -188,7 +205,6 @@ export const useSupabaseProperties = () => {
           )
         `)
         .eq('id', id)
-        .eq('is_published', true)
         .maybeSingle();
 
       if (error) {
@@ -205,7 +221,7 @@ export const useSupabaseProperties = () => {
   const getPropertyByCode = useCallback(async (code: string): Promise<Property | null> => {
     try {
       const { data, error } = await supabase
-        .from('properties')
+        .from('properties_public')
         .select(`
           *,
           property_images (
@@ -217,7 +233,6 @@ export const useSupabaseProperties = () => {
           )
         `)
         .eq('code', code)
-        .eq('is_published', true)
         .maybeSingle();
 
       if (error) {
