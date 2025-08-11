@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useSupabaseProperties, Property } from '@/hooks/useSupabaseProperties';
+import { useAdminProperties, AdminProperty } from '@/hooks/useAdminProperties';
 import { useAuthHook } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,17 +17,18 @@ import PropertyTypesManager from '@/components/admin/PropertyTypesManager';
 import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
-  const { properties, loading, refetch } = useSupabaseProperties();
+  const { properties, loading, refetch } = useAdminProperties();
   const { signOut, user } = useAuthHook();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<AdminProperty[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
   const [featuredFilter, setFeaturedFilter] = useState('');
+  const [publishFilter, setPublishFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editingProperty, setEditingProperty] = useState<Property | undefined>(undefined);
+  const [editingProperty, setEditingProperty] = useState<AdminProperty | undefined>(undefined);
   const [showTypesManager, setShowTypesManager] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -58,8 +59,14 @@ export default function Admin() {
       );
     }
 
+    if (publishFilter && publishFilter !== 'all') {
+      filtered = filtered.filter(property => 
+        publishFilter === 'published' ? property.isPublished : !property.isPublished
+      );
+    }
+
     setFilteredProperties(filtered);
-  }, [properties, searchTerm, typeFilter, cityFilter, featuredFilter]);
+  }, [properties, searchTerm, typeFilter, cityFilter, featuredFilter, publishFilter]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -118,7 +125,7 @@ export default function Admin() {
     setShowForm(true);
   };
 
-  const handleEditProperty = (property: Property) => {
+  const handleEditProperty = (property: AdminProperty) => {
     setEditingProperty(property);
     setShowForm(true);
   };
@@ -184,7 +191,7 @@ export default function Admin() {
             <CardDescription>Filtre os imóveis por diferentes critérios</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -229,6 +236,17 @@ export default function Admin() {
                   <SelectItem value="normal">Normais</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Select value={publishFilter} onValueChange={setPublishFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Publicação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="published">Publicados</SelectItem>
+                  <SelectItem value="unpublished">Não publicados</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -247,6 +265,7 @@ export default function Admin() {
                   <TableHead>Preço</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Publicação</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -270,6 +289,11 @@ export default function Admin() {
                           <Badge>Novo</Badge>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={property.isPublished ? "default" : "secondary"}>
+                        {property.isPublished ? "Publicado" : "Oculto"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">

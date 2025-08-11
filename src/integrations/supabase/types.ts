@@ -109,6 +109,7 @@ export type Database = {
           is_featured: boolean
           is_gated_community: boolean
           is_new: boolean
+          is_published: boolean
           location: string
           parking: number
           price: string
@@ -133,6 +134,7 @@ export type Database = {
           is_featured?: boolean
           is_gated_community?: boolean
           is_new?: boolean
+          is_published?: boolean
           location: string
           parking?: number
           price: string
@@ -157,6 +159,7 @@ export type Database = {
           is_featured?: boolean
           is_gated_community?: boolean
           is_new?: boolean
+          is_published?: boolean
           location?: string
           parking?: number
           price?: string

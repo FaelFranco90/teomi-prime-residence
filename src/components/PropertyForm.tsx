@@ -37,6 +37,7 @@ const propertySchema = z.object({
   is_new: z.boolean().default(false),
   has_virtual_tour: z.boolean().default(false),
   is_gated_community: z.boolean().default(false),
+  is_published: z.boolean().default(true),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -81,6 +82,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       is_new: property.isNew || false,
       has_virtual_tour: property.virtualTour || false,
       is_gated_community: property.gatedCommunity || false,
+      is_published: true, // All existing properties are published by default
     } : {
       bedrooms: 0,
       bathrooms: 0,
@@ -91,6 +93,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       is_new: false,
       has_virtual_tour: false,
       is_gated_community: false,
+      is_published: true,
     }
   });
 
@@ -174,6 +177,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         is_new: data.is_new ?? false,
         has_virtual_tour: data.has_virtual_tour ?? false,
         is_gated_community: data.is_gated_community ?? false,
+        is_published: data.is_published ?? true,
         price_number: convertPriceToNumber(data.price),
         area_number: convertAreaToNumber(data.area),
       };
@@ -414,6 +418,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               <div className="flex items-center space-x-2">
                 <Switch id="is_gated_community" checked={watch('is_gated_community')} onCheckedChange={(checked) => setValue('is_gated_community', checked)} />
                 <Label htmlFor="is_gated_community">Condomínio fechado</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="is_published" checked={watch('is_published')} onCheckedChange={(checked) => setValue('is_published', checked)} />
+                <Label htmlFor="is_published">Publicado no site</Label>
               </div>
             </div>
           </div>

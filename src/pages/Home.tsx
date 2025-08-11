@@ -15,12 +15,6 @@ import property3 from "@/assets/property-3.jpg";
 
 // Featured properties agora serão carregados do Supabase dentro do componente
 
-const neighborhoods = [
-  { name: "Alphaville", count: "25 imóveis", image: property1 },
-  { name: "Campos do Conde", count: "18 imóveis", image: property2 },
-  { name: "Altos da Serra", count: "12 imóveis", image: property3 },
-  { name: "Vila Adyanna", count: "8 imóveis", image: property1 },
-];
 
 const propertyTypes = [
   { name: "Casas de Luxo", icon: HomeIcon, description: "Residências exclusivas com arquitetura sofisticada" },
@@ -225,38 +219,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Neighborhoods */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">
-              Regiões Exclusivas
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Descubra as localizações mais privilegiadas da região
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {neighborhoods.map((neighborhood, index) => (
-              <Card key={index} className="overflow-hidden hover:shadow-luxury transition-all duration-300 hover:scale-105 cursor-pointer">
-                <div className="relative aspect-[4/3]">
-                  <img 
-                    src={neighborhood.image} 
-                    alt={neighborhood.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="font-serif text-lg font-semibold">{neighborhood.name}</h3>
-                    <p className="text-sm text-white/90">{neighborhood.count}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

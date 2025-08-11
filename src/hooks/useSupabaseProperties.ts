@@ -61,7 +61,7 @@ export interface Property {
   createdAt: string;
 }
 
-const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): Property => {
+export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): Property => {
   try {
     const createdAt = supabaseProperty.created_at ? new Date(supabaseProperty.created_at) : new Date();
     const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -156,6 +156,7 @@ export const useSupabaseProperties = () => {
             order_index
           )
         `)
+        .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -187,6 +188,7 @@ export const useSupabaseProperties = () => {
           )
         `)
         .eq('id', id)
+        .eq('is_published', true)
         .maybeSingle();
 
       if (error) {
@@ -215,6 +217,7 @@ export const useSupabaseProperties = () => {
           )
         `)
         .eq('code', code)
+        .eq('is_published', true)
         .maybeSingle();
 
       if (error) {
