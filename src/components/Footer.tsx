@@ -5,13 +5,12 @@ import { MapPin, Phone, Mail, MessageCircle, Instagram, Facebook, Linkedin } fro
 const navigation = {
   main: [
     { name: "Imóveis", href: "/imoveis" },
-    { name: "Sobre", href: "/sobre" },
     { name: "Contato", href: "/contato" },
   ],
   social: [
     { name: "Instagram", href: "https://www.instagram.com/teomi.imoveis/", icon: Instagram },
     { name: "Facebook", href: "https://www.facebook.com/teomi.imoveis/", icon: Facebook },
-    { name: "LinkedIn", href: "#", icon: Linkedin },
+    { name: "LinkedIn", href: "https://www.linkedin.com/company/teomi-imoveis/", icon: Linkedin },
   ],
 };
 
@@ -98,11 +97,18 @@ export default function Footer() {
               Entre em contato para um atendimento exclusivo e personalizado
             </p>
             <div className="space-y-3">
-              <Button variant="gold" className="w-full gap-2">
+              <Button 
+                variant="gold" 
+                className="w-full gap-2"
+                onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+              >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
               </Button>
-              <Button className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/50 transition-all">
+              <Button 
+                className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/50 transition-all"
+                onClick={() => window.open('https://calendly.com/teomi-prime', '_blank')}
+              >
                 Agendar Reunião
               </Button>
             </div>

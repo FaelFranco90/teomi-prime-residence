@@ -136,11 +136,21 @@ export default function About() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in">
-            <Button variant="gold" size="lg" className="text-lg px-8 py-6 gap-3 hover:scale-105 transition-all">
+            <Button 
+              variant="gold" 
+              size="lg" 
+              className="text-lg px-8 py-6 gap-3 hover:scale-105 transition-all"
+              onClick={() => window.open('https://calendly.com/teomi-prime', '_blank')}
+            >
               <Calendar className="h-5 w-5" />
               Agendar Consultoria Exclusiva
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30"
+              onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de receber o relatório premium do mercado de alto padrão', '_blank')}
+            >
               Baixar Relatório Premium
             </Button>
           </div>
@@ -263,14 +273,29 @@ export default function About() {
 
           <div className="text-center mb-8">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="gold" size="lg" className="text-lg px-8 py-6">
+              <Button 
+                variant="gold" 
+                size="lg" 
+                className="text-lg px-8 py-6"
+                onClick={() => window.open('/contato', '_self')}
+              >
                 Conheça Nossos Diferenciais
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40 gap-3">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40 gap-3"
+                onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de falar com um especialista em imóveis de alto padrão', '_blank')}
+              >
                 <Users className="h-5 w-5" />
                 Fale com um Especialista
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40"
+                onClick={() => window.open('https://calendly.com/teomi-prime', '_blank')}
+              >
                 Agendar Atendimento Privado
               </Button>
             </div>
@@ -366,13 +391,28 @@ export default function About() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="gold" size="lg" className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6">
+              <Button 
+                variant="gold" 
+                size="lg" 
+                className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6"
+                onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de solicitar uma avaliação patrimonial', '_blank')}
+              >
                 Solicitar Avaliação Patrimonial
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30"
+                onClick={() => window.open('https://calendly.com/teomi-prime', '_blank')}
+              >
                 Agendar Reunião Confidencial
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3"
+                onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+              >
                 <MessageCircle className="h-5 w-5" />
                 WhatsApp VIP
               </Button>

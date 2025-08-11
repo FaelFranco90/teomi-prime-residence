@@ -7,7 +7,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 const navigation = [
   { name: "Imóveis", href: "/imoveis" },
-  { name: "Sobre", href: "/sobre" },
   { name: "Contato", href: "/contato" },
 ];
 
@@ -56,7 +55,11 @@ export default function Header() {
           
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-4">
             <ThemeToggle />
-            <Button variant="gold" className="gap-2">
+            <Button 
+              variant="gold" 
+              className="gap-2"
+              onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+            >
               <MessageCircle className="h-4 w-4" />
               WhatsApp
             </Button>
@@ -105,7 +108,11 @@ export default function Header() {
                     <div className="flex justify-center">
                       <ThemeToggle />
                     </div>
-                    <Button variant="gold" className="w-full gap-2">
+                    <Button 
+                      variant="gold" 
+                      className="w-full gap-2"
+                      onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+                    >
                       <MessageCircle className="h-4 w-4" />
                       WhatsApp
                     </Button>
@@ -123,7 +130,7 @@ export default function Header() {
           variant="gold"
           size="lg"
           className="rounded-full shadow-luxury hover:shadow-silver"
-          onClick={() => window.open('https://wa.me/5512999999999', '_blank')}
+          onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
