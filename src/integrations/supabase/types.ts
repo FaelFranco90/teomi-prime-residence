@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      leads: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string | null
+          id: string
+          ip_address: string | null
+          is_read: boolean
+          message: string | null
+          name: string
+          origin_path: string | null
+          phone: string | null
+          property_id: string | null
+          referrer: string | null
+          source: string
+          status: string
+          updated_at: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          is_read?: boolean
+          message?: string | null
+          name: string
+          origin_path?: string | null
+          phone?: string | null
+          property_id?: string | null
+          referrer?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          is_read?: boolean
+          message?: string | null
+          name?: string
+          origin_path?: string | null
+          phone?: string | null
+          property_id?: string | null
+          referrer?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
           area: string
