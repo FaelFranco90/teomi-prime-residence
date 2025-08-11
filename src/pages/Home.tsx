@@ -1,4 +1,5 @@
 
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,60 +13,7 @@ import property1 from "@/assets/property-1.jpg";
 import property2 from "@/assets/property-2.jpg";
 import property3 from "@/assets/property-3.jpg";
 
-const featuredProperties = [
-  {
-    id: "1",
-    code: "TP001",
-    title: "Penthouse Exclusivo Vista Panorâmica",
-    location: "Alphaville, São José dos Campos",
-    price: "R$ 2.800.000",
-    area: "280m²",
-    bedrooms: 4,
-    bathrooms: 5,
-    suites: 3,
-    parking: 3,
-    images: [property1, property2, property3],
-    featured: true,
-    exclusive: true,
-    virtualTour: true,
-    gatedCommunity: true,
-    isNew: false,
-  },
-  {
-    id: "2", 
-    code: "TP002",
-    title: "Casa Moderna com Piscina Infinita",
-    location: "Campos do Conde, Tremembé",
-    price: "R$ 1.950.000",
-    area: "350m²",
-    bedrooms: 5,
-    bathrooms: 6,
-    suites: 2,
-    parking: 4,
-    images: [property2, property1, property3],
-    featured: true,
-    virtualTour: true,
-    gatedCommunity: true,
-    isNew: true,
-  },
-  {
-    id: "3",
-    code: "TP003",
-    title: "Apartamento de Luxo no Centro",
-    location: "Centro, São José dos Campos", 
-    price: "R$ 1.200.000",
-    area: "180m²",
-    bedrooms: 3,
-    bathrooms: 3,
-    suites: 1,
-    parking: 2,
-    images: [property3, property1, property2],
-    featured: true,
-    virtualTour: false,
-    gatedCommunity: false,
-    isNew: false,
-  },
-];
+// Featured properties agora serão carregados do Supabase dentro do componente
 
 const neighborhoods = [
   { name: "Alphaville", count: "25 imóveis", image: property1 },
@@ -91,6 +39,12 @@ export default function Home() {
     clearFilters, 
     hasActiveFilters 
   } = usePropertyFilters(properties);
+
+  const featuredProperties = useMemo(() => {
+    const list = properties.filter(p => p.featured);
+    const base = list.length > 0 ? list : properties;
+    return base.slice(0, 3);
+  }, [properties]);
 
   const handleSearch = () => {
     navigate('/imoveis');
