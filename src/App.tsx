@@ -37,7 +37,7 @@ const App = () => (
                 <Route path="/contato" element={<Contact />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={
-                  <ProtectedRoute adminOnly>
+                  <ProtectedRoute requireAdmin>
                     <Admin />
                   </ProtectedRoute>
                 } />
