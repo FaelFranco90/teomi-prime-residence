@@ -15,27 +15,34 @@ for (const [fullPath, url] of Object.entries(assetModules)) {
 }
 
 export function resolveImageUrl(input?: string | null): string {
-  if (!input) return PLACEHOLDER;
-  const url = input.trim();
-  const lower = url.toLowerCase();
+  try {
+    if (!input || typeof input !== 'string') return PLACEHOLDER;
+    const url = input.trim();
+    if (!url) return PLACEHOLDER;
+    
+    const lower = url.toLowerCase();
 
-  // Absolute or runtime URLs
-  if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:') || lower.startsWith('blob:')) {
-    return url;
+    // Absolute or runtime URLs
+    if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:') || lower.startsWith('blob:')) {
+      return url;
+    }
+
+    // Try by basename against imported assets
+    const basename = lower.split('/').pop();
+    if (basename && assetsByBasename.has(basename)) {
+      return assetsByBasename.get(basename)!;
+    }
+
+    // Try loose match (if input contains an asset filename)
+    for (const [base, assetUrl] of assetsByBasename.entries()) {
+      if (lower.includes(base)) return assetUrl;
+    }
+
+    return PLACEHOLDER;
+  } catch (error) {
+    console.error('Error resolving image URL:', error, 'input:', input);
+    return PLACEHOLDER;
   }
-
-  // Try by basename against imported assets
-  const basename = lower.split('/').pop();
-  if (basename && assetsByBasename.has(basename)) {
-    return assetsByBasename.get(basename)!;
-  }
-
-  // Try loose match (if input contains an asset filename)
-  for (const [base, assetUrl] of assetsByBasename.entries()) {
-    if (lower.includes(base)) return assetUrl;
-  }
-
-  return PLACEHOLDER;
 }
 
 export function resolveImageUrls(inputs: (string | null | undefined)[] | null | undefined): string[] {

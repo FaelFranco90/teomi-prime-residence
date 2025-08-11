@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Car, Square, MapPin, Play, Shield, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { withErrorBoundary } from "@/components/ErrorBoundary";
 
 interface PropertyCardProps {
   id: string;
@@ -24,18 +25,18 @@ interface PropertyCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-export default function PropertyCard({ 
+function PropertyCard({ 
   id, 
-  code,
-  title, 
-  location, 
-  price, 
-  area, 
-  bedrooms, 
-  bathrooms, 
-  suites,
-  parking, 
-  images, 
+  code = 'N/A',
+  title = 'Imóvel sem título', 
+  location = 'Localização não informada', 
+  price = 'Preço sob consulta', 
+  area = 'N/A', 
+  bedrooms = 0, 
+  bathrooms = 0, 
+  suites = 0,
+  parking = 0, 
+  images = [], 
   featured = false,
   exclusive = false,
   virtualTour = false,
@@ -43,16 +44,23 @@ export default function PropertyCard({
   isNew = false,
   viewMode = 'grid'
 }: PropertyCardProps) {
+  // Defensive check for images array
+  const safeImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'string') : [];
+  const hasImages = safeImages.length > 0;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    if (hasImages) {
+      setCurrentImageIndex((prev) => (prev + 1) % safeImages.length);
+    }
   };
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    if (hasImages) {
+      setCurrentImageIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
+    }
   };
 
   if (viewMode === 'grid') {
@@ -60,14 +68,14 @@ export default function PropertyCard({
       <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img 
-            src={images[currentImageIndex] || '/placeholder.svg'} 
-            alt={title}
+            src={safeImages[currentImageIndex] || '/placeholder.svg'} 
+            alt={title || 'Imóvel'}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
           {/* Navigation Arrows */}
-          {images.length > 1 && (
+          {safeImages.length > 1 && (
             <>
               <Button
                 variant="ghost"
@@ -207,14 +215,14 @@ export default function PropertyCard({
         <div className="flex-shrink-0">
           <div className="relative w-80 h-60 rounded-lg overflow-hidden">
             <img 
-              src={images[currentImageIndex] || '/placeholder.svg'} 
-              alt={title}
+              src={safeImages[currentImageIndex] || '/placeholder.svg'} 
+              alt={title || 'Imóvel'}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
             />
             
             {/* Navigation Arrows */}
-            {images.length > 1 && (
+            {safeImages.length > 1 && (
               <>
                 <Button
                   variant="ghost"
@@ -271,7 +279,7 @@ export default function PropertyCard({
           {/* Thumbnails Column */}
           <div className="flex-shrink-0">
             <div className="grid grid-cols-2 gap-2 w-32">
-              {images.slice(0, 6).map((image, index) => (
+              {safeImages.slice(0, 6).map((image, index) => (
                 <div
                   key={index}
                   className={`relative w-15 h-12 rounded cursor-pointer overflow-hidden border-2 transition-all ${
@@ -281,13 +289,13 @@ export default function PropertyCard({
                 >
                   <img 
                     src={image || '/placeholder.svg'} 
-                    alt={`${title} ${index + 1}`}
+                    alt={`${title || 'Imóvel'} ${index + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                   />
-                  {images.length > 6 && index === 5 && (
+                  {safeImages.length > 6 && index === 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-white text-xs font-semibold">+{images.length - 6}</span>
+                      <span className="text-white text-xs font-semibold">+{safeImages.length - 6}</span>
                     </div>
                   )}
                 </div>
@@ -393,3 +401,6 @@ export default function PropertyCard({
     </Card>
   );
 }
+
+// Export the component wrapped with ErrorBoundary
+export default withErrorBoundary(PropertyCard);

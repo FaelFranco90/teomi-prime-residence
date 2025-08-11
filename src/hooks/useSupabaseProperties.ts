@@ -62,35 +62,76 @@ export interface Property {
 }
 
 const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): Property => {
-  const createdAt = new Date(supabaseProperty.created_at);
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const isNew = Date.now() - createdAt.getTime() <= THIRTY_DAYS_MS;
+  try {
+    const createdAt = supabaseProperty.created_at ? new Date(supabaseProperty.created_at) : new Date();
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const isNew = Date.now() - createdAt.getTime() <= THIRTY_DAYS_MS;
 
-  return {
-    id: supabaseProperty.id,
-    code: supabaseProperty.code,
-    title: supabaseProperty.title,
-    location: supabaseProperty.location,
-    price: supabaseProperty.price,
-    area: supabaseProperty.area,
-    bedrooms: supabaseProperty.bedrooms,
-    bathrooms: supabaseProperty.bathrooms,
-    suites: supabaseProperty.suites,
-    parking: supabaseProperty.parking,
-    images: (Array.isArray(supabaseProperty.property_images) ? supabaseProperty.property_images : [])
-      .sort((a, b) => a.order_index - b.order_index)
-      .map(img => resolveImageUrl(img.image_url)),
-    featured: supabaseProperty.is_featured,
-    exclusive: supabaseProperty.is_exclusive,
-    virtualTour: supabaseProperty.has_virtual_tour,
-    gatedCommunity: supabaseProperty.is_gated_community,
-    isNew,
-    propertyType: supabaseProperty.property_type,
-    youtubeVideoUrl: supabaseProperty.youtube_video_url,
-    priceNumber: supabaseProperty.price_number,
-    areaNumber: supabaseProperty.area_number,
-    createdAt: supabaseProperty.created_at,
-  };
+    // Process images with defensive checks
+    let images: string[] = [];
+    if (Array.isArray(supabaseProperty.property_images)) {
+      images = supabaseProperty.property_images
+        .filter(img => img && typeof img === 'object' && img.image_url) // Filter out invalid entries
+        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+        .map(img => resolveImageUrl(img.image_url))
+        .filter(url => url && url !== '/placeholder.svg'); // Remove failed resolutions
+    }
+
+    // Ensure at least one placeholder if no valid images
+    if (images.length === 0) {
+      images = ['/placeholder.svg'];
+    }
+
+    return {
+      id: supabaseProperty.id || '',
+      code: supabaseProperty.code || 'N/A',
+      title: supabaseProperty.title || 'Imóvel sem título',
+      location: supabaseProperty.location || 'Localização não informada',
+      price: supabaseProperty.price || 'Preço sob consulta',
+      area: supabaseProperty.area || 'N/A',
+      bedrooms: supabaseProperty.bedrooms || 0,
+      bathrooms: supabaseProperty.bathrooms || 0,
+      suites: supabaseProperty.suites || 0,
+      parking: supabaseProperty.parking || 0,
+      images,
+      featured: supabaseProperty.is_featured || false,
+      exclusive: supabaseProperty.is_exclusive || false,
+      virtualTour: supabaseProperty.has_virtual_tour || false,
+      gatedCommunity: supabaseProperty.is_gated_community || false,
+      isNew,
+      propertyType: supabaseProperty.property_type || undefined,
+      youtubeVideoUrl: supabaseProperty.youtube_video_url || undefined,
+      priceNumber: supabaseProperty.price_number || 0,
+      areaNumber: supabaseProperty.area_number || 0,
+      createdAt: supabaseProperty.created_at || '',
+    };
+  } catch (error) {
+    console.error('Error converting Supabase property:', error, 'property:', supabaseProperty);
+    // Return a safe fallback object
+    return {
+      id: supabaseProperty?.id || '',
+      code: supabaseProperty?.code || 'N/A',
+      title: 'Erro ao carregar imóvel',
+      location: 'Localização indisponível',
+      price: 'Preço indisponível',
+      area: 'N/A',
+      bedrooms: 0,
+      bathrooms: 0,
+      suites: 0,
+      parking: 0,
+      images: ['/placeholder.svg'],
+      featured: false,
+      exclusive: false,
+      virtualTour: false,
+      gatedCommunity: false,
+      isNew: false,
+      propertyType: undefined,
+      youtubeVideoUrl: undefined,
+      priceNumber: 0,
+      areaNumber: 0,
+      createdAt: '',
+    };
+  }
 };
 
 export const useSupabaseProperties = () => {
