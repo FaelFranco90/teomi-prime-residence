@@ -18,9 +18,11 @@ import {
   ChevronRight,
   Phone,
   Mail,
-  MessageCircle
+  MessageCircle,
+  Video
 } from "lucide-react";
 import { useSupabaseProperties, Property } from "@/hooks/useSupabaseProperties";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 
 
 export default function PropertyDetail() {
@@ -227,6 +229,19 @@ export default function PropertyDetail() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Video Section */}
+              {property.youtubeVideoUrl && (
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Video className="h-6 w-6 text-accent" />
+                      <h2 className="font-serif text-2xl font-bold">Vídeo do Imóvel</h2>
+                    </div>
+                    <YouTubeEmbed url={property.youtubeVideoUrl} title={`Vídeo - ${property.title}`} />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Description */}
               <Card>

@@ -117,6 +117,7 @@ export type Database = {
           suites: number
           title: string
           updated_at: string
+          youtube_video_url: string | null
         }
         Insert: {
           area: string
@@ -140,6 +141,7 @@ export type Database = {
           suites?: number
           title: string
           updated_at?: string
+          youtube_video_url?: string | null
         }
         Update: {
           area?: string
@@ -163,6 +165,7 @@ export type Database = {
           suites?: number
           title?: string
           updated_at?: string
+          youtube_video_url?: string | null
         }
         Relationships: []
       }

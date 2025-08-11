@@ -24,6 +24,10 @@ const propertySchema = z.object({
   area: z.string().min(1, 'Área é obrigatória'),
   property_type: z.string().min(1, 'Tipo é obrigatório'),
   description: z.string().optional(),
+  youtube_video_url: z.string().optional().refine((val) => {
+    if (!val) return true; // Optional field
+    return /^https:\/\/(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[\w-]+/.test(val);
+  }, 'URL do YouTube inválida'),
   bedrooms: z.number().min(0).default(0),
   bathrooms: z.number().min(0).default(0),
   suites: z.number().min(0).default(0),
@@ -67,6 +71,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       area: property.area,
       property_type: property.propertyType || '',
       description: '',
+      youtube_video_url: property.youtubeVideoUrl || '',
       bedrooms: property.bedrooms,
       bathrooms: property.bathrooms,
       suites: property.suites,
@@ -162,6 +167,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         area: data.area,
         property_type: data.property_type,
         description: data.description,
+        youtube_video_url: data.youtube_video_url || null,
         bedrooms: data.bedrooms,
         bathrooms: data.bathrooms,
         suites: data.suites,
@@ -364,6 +370,22 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           <div className="space-y-2">
             <Label htmlFor="description">Descrição</Label>
             <Textarea id="description" {...register('description')} placeholder="Descrição detalhada do imóvel..." rows={4} />
+          </div>
+
+          {/* URL do Vídeo YouTube */}
+          <div className="space-y-2">
+            <Label htmlFor="youtube_video_url">URL do Vídeo YouTube</Label>
+            <Input 
+              id="youtube_video_url" 
+              {...register('youtube_video_url')} 
+              placeholder="Ex: https://www.youtube.com/watch?v=ABC123 ou https://youtu.be/ABC123" 
+            />
+            {errors.youtube_video_url && (
+              <p className="text-sm text-destructive">{errors.youtube_video_url.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Adicione um vídeo do YouTube para exibir na página do imóvel (opcional)
+            </p>
           </div>
 
           {/* Características */}

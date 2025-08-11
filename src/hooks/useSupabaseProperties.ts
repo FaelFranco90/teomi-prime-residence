@@ -29,6 +29,7 @@ export interface SupabaseProperty {
   is_gated_community: boolean;
   is_new: boolean;
   description?: string;
+  youtube_video_url?: string;
   created_at: string;
   updated_at: string;
   property_images: PropertyImage[];
@@ -53,6 +54,7 @@ export interface Property {
   gatedCommunity?: boolean;
   isNew?: boolean;
   propertyType?: string;
+  youtubeVideoUrl?: string;
   priceNumber: number;
   areaNumber: number;
   createdAt: string;
@@ -83,6 +85,7 @@ const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProperty): 
     gatedCommunity: supabaseProperty.is_gated_community,
     isNew,
     propertyType: supabaseProperty.property_type,
+    youtubeVideoUrl: supabaseProperty.youtube_video_url,
     priceNumber: supabaseProperty.price_number,
     areaNumber: supabaseProperty.area_number,
     createdAt: supabaseProperty.created_at,
