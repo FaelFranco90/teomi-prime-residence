@@ -15,6 +15,10 @@ import { Property } from '@/hooks/useSupabaseProperties';
 import { ImageUpload } from './ImageUpload';
 import { Loader2, Wand2 } from 'lucide-react';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
+import { SelectedOwner } from '@/types/owners';
+import { fetchOwnersForProperty, syncPropertyOwners } from '@/hooks/useOwners';
+import PropertyOwnersSection from '@/components/admin/PropertyOwnersSection';
+import { useAuthHook } from '@/hooks/useAuth';
 
 const propertySchema = z.object({
   code: z.string().optional(),
@@ -109,6 +113,28 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
   const selectedType = watch('property_type');
   const currentCode = watch('code');
+  const { isAdmin } = useAuthHook(); // mantém visível apenas para admin atual
+
+  // Proprietários (interno)
+  const [selectedOwners, setSelectedOwners] = useState<SelectedOwner[]>([]);
+
+  useEffect(() => {
+    let ignore = false;
+    const loadOwners = async () => {
+      if (property?.id) {
+        try {
+          const data = await fetchOwnersForProperty(property.id);
+          if (!ignore) setSelectedOwners(data);
+        } catch (e) {
+          console.error('Erro ao carregar proprietários do imóvel:', e);
+        }
+      } else {
+        setSelectedOwners([]);
+      }
+    };
+    loadOwners();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [property?.id]);
 
   const convertPriceToNumber = (priceStr: string): number => {
     if (priceStr === "Sob Consulta") return 0;
@@ -224,6 +250,16 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       // Handle image uploads if there are new images
       if (images.length > 0) {
         await handleImageUploads(propertyId);
+      }
+
+      // Sincroniza proprietários (interno, não público)
+      if (selectedOwners && selectedOwners.length >= 0) {
+        try {
+          await syncPropertyOwners(propertyId, selectedOwners);
+        } catch (e) {
+          console.error('Erro ao sincronizar proprietários:', e);
+          // não interromper o fluxo principal; apenas logar e seguir
+        }
       }
 
       toast({
@@ -490,6 +526,13 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               onExistingImagesChange={setExistingImages}
             />
           </div>
+
+          {/* Seção interna de Proprietários (apenas admin) */}
+          <PropertyOwnersSection
+            selectedOwners={selectedOwners}
+            setSelectedOwners={setSelectedOwners}
+            isVisible={Boolean(isAdmin)}
+          />
 
           {/* Ações */}
           <div className="flex justify-end space-x-4 pt-6">
