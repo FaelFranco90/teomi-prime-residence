@@ -74,7 +74,7 @@ export default function SearchForm({
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="">Carregando locais...</SelectItem>
+                <SelectItem value="loading" disabled>Carregando locais...</SelectItem>
               )}
             </SelectContent>
           </Select>
