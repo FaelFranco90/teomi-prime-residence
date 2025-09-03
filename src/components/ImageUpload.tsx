@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X, Upload, Image as ImageIcon, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import heic2any from 'heic2any';
 
 interface ImageUploadProps {
   images: File[];
@@ -31,26 +32,28 @@ export function ImageUpload({
     }
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const files = Array.from(e.dataTransfer.files);
-      handleFiles(files);
+      await handleFiles(files);
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const files = Array.from(e.target.files);
-      handleFiles(files);
+      await handleFiles(files);
     }
   };
 
-  const handleFiles = (files: File[]) => {
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+  const handleFiles = async (files: File[]) => {
+    const imageFiles = files.filter(file => 
+      file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic')
+    );
     
     if (imageFiles.length !== files.length) {
       toast({
@@ -61,15 +64,55 @@ export function ImageUpload({
     }
 
     if (imageFiles.length > 0) {
-      const newImages = [...images, ...imageFiles];
-      if (newImages.length > 10) {
-        toast({
-          title: "Limite excedido",
-          description: "Máximo de 10 imagens por imóvel.",
-          variant: "destructive",
-        });
-        return;
+      const newImages = [...images];
+      
+      // Processa cada arquivo (converte HEIC se necessário)
+      for (const file of imageFiles) {
+        if (newImages.length >= 10) {
+          toast({
+            title: "Limite excedido",
+            description: "Máximo de 10 imagens por imóvel.",
+            variant: "destructive",
+          });
+          break;
+        }
+        
+        try {
+          let processedFile = file;
+          
+          // Converte HEIC para JPEG
+          if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
+            toast({
+              title: "Convertendo HEIC",
+              description: `Convertendo ${file.name} para JPEG...`,
+            });
+            
+            const convertedBlob = await heic2any({
+              blob: file,
+              toType: 'image/jpeg',
+              quality: 0.8
+            }) as Blob;
+            
+            const fileName = file.name.replace(/\.heic$/i, '.jpg');
+            processedFile = new File([convertedBlob], fileName, { type: 'image/jpeg' });
+            
+            toast({
+              title: "Conversão concluída",
+              description: `${file.name} convertido com sucesso.`,
+            });
+          }
+          
+          newImages.push(processedFile);
+        } catch (error) {
+          console.error('Erro ao processar arquivo:', error);
+          toast({
+            title: "Erro de conversão",
+            description: `Não foi possível processar ${file.name}. Tente outro formato.`,
+            variant: "destructive",
+          });
+        }
       }
+      
       onImagesChange(newImages);
     }
   };
@@ -108,14 +151,14 @@ export function ImageUpload({
             onDrop={handleDrop}
             onClick={() => document.getElementById('file-upload')?.click()}
           >
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleChange}
-              className="hidden"
-            />
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept="image/*,.heic"
+                onChange={handleChange}
+                className="hidden"
+              />
             <div className="flex flex-col items-center justify-center space-y-2">
               <Upload className="h-10 w-10 text-muted-foreground" />
               <div className="text-center">
@@ -123,7 +166,7 @@ export function ImageUpload({
                   Clique para fazer upload ou arraste as imagens aqui
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  PNG, JPG, JPEG até 5MB cada. Máximo 10 imagens.
+                  PNG, JPG, JPEG, HEIC até 5MB cada. Máximo 10 imagens.
                 </p>
               </div>
             </div>

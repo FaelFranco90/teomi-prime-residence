@@ -274,9 +274,28 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       onSuccess();
     } catch (error) {
       console.error('Error saving property:', error);
+      
+      let errorMessage = "Não foi possível salvar o imóvel. Tente novamente.";
+      let errorTitle = "Erro ao salvar";
+      
+      if (error && typeof error === 'object' && 'message' in error) {
+        const supabaseError = error as any;
+        
+        // Verificar erros específicos do Supabase
+        if (supabaseError.code === '42501' || supabaseError.message?.includes('insufficient_privilege') || supabaseError.message?.includes('permission denied')) {
+          errorTitle = "Erro de Permissão";
+          errorMessage = "Você não tem permissão para realizar esta operação. Verifique se está logado como administrador ou editor.";
+        } else if (supabaseError.code === '23505' || supabaseError.message?.includes('duplicate key')) {
+          errorTitle = "Código Duplicado";
+          errorMessage = "Este código de imóvel já existe. Escolha um código diferente.";
+        } else if (supabaseError.message) {
+          errorMessage = `Erro: ${supabaseError.message}`;
+        }
+      }
+      
       toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar o imóvel. Tente novamente.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -286,18 +305,29 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
   const handleImageUploads = async (propertyId: string) => {
     const uploadPromises = images.map(async (image, index) => {
-      const fileName = `${propertyId}_${Date.now()}_${index}.${image.name.split('.').pop()}`;
-      const filePath = `imoveis/${propertyId}/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('property-images').upload(filePath, image);
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
-      const { error: dbError } = await supabase.from('property_images').insert({
-        property_id: propertyId,
-        image_url: publicUrl,
-        is_primary: index === 0,
-        order_index: index,
-      });
-      if (dbError) throw dbError;
+      try {
+        const fileName = `${propertyId}_${Date.now()}_${index}.${image.name.split('.').pop()}`;
+        const filePath = `imoveis/${propertyId}/${fileName}`;
+        const { error: uploadError } = await supabase.storage.from('property-images').upload(filePath, image);
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw new Error(`Erro ao fazer upload da imagem ${image.name}: ${uploadError.message}`);
+        }
+        const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
+        const { error: dbError } = await supabase.from('property_images').insert({
+          property_id: propertyId,
+          image_url: publicUrl,
+          is_primary: index === 0,
+          order_index: index,
+        });
+        if (dbError) {
+          console.error('Database insert error:', dbError);
+          throw new Error(`Erro ao salvar informações da imagem ${image.name}: ${dbError.message}`);
+        }
+      } catch (error) {
+        console.error('Image upload error for', image.name, ':', error);
+        throw error;
+      }
     });
     await Promise.all(uploadPromises);
   };
