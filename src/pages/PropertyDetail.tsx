@@ -14,8 +14,6 @@ import {
   MapPin, 
   Play, 
   Shield, 
-  ChevronLeft, 
-  ChevronRight,
   Phone,
   Mail,
   MessageCircle,
@@ -23,11 +21,11 @@ import {
 } from "lucide-react";
 import { useSupabaseProperties, Property } from "@/hooks/useSupabaseProperties";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
+import { ImageLightbox } from "@/components/ImageLightbox";
 
 
 export default function PropertyDetail() {
   const { code } = useParams();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [contactForm, setContactForm] = useState({
@@ -105,18 +103,6 @@ export default function PropertyDetail() {
     );
   }
 
-  const nextImage = () => {
-    const imgs = property?.images ?? [];
-    if (imgs.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev + 1) % imgs.length);
-  };
-
-  const prevImage = () => {
-    const imgs = property?.images ?? [];
-    if (imgs.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev - 1 + imgs.length) % imgs.length);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Contact form submitted:', contactForm);
@@ -137,79 +123,80 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      {/* Image Gallery */}
+      {/* Hero Banner */}
       <section className="relative">
-        <div className="relative h-96 md:h-[500px] overflow-hidden">
-          <img 
-            src={property.images?.[currentImageIndex] ?? '/placeholder.svg'} 
-            alt={property.title || 'Imóvel'}
-            className="w-full h-full object-cover"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          
-          {/* Image Navigation */}
-          {(property.images?.length ?? 0) > 1 && (
-            <>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/20 hover:bg-background/40 text-background"
-                onClick={prevImage}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/20 hover:bg-background/40 text-background"
-                onClick={nextImage}
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            </>
-          )}
-
-          {/* Property Info Overlay */}
-          <div className="absolute bottom-6 left-6">
-            <div className="flex flex-wrap gap-2 mb-3">
-              {property.isNew && (
-                <Badge className="bg-green-600 text-white">Novo</Badge>
-              )}
-              {property.featured && (
-                <Badge className="bg-accent text-accent-foreground">Destaque</Badge>
-              )}
-              {property.exclusive && (
-                <Badge variant="outline" className="bg-background/90 text-foreground border-accent">
-                  Exclusivo
-                </Badge>
-              )}
+        <div className="max-w-7xl mx-auto">
+          <div className="relative h-80 md:h-96 overflow-hidden rounded-lg mx-6 mt-6">
+            <img 
+              src={property.images?.[0] ?? '/placeholder.svg'} 
+              alt={property.title || 'Imóvel'}
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            
+            {/* Property Info Overlay */}
+            <div className="absolute bottom-6 left-6">
+              <div className="flex flex-wrap gap-2 mb-3">
+                {property.isNew && (
+                  <Badge className="bg-green-600 text-white">Novo</Badge>
+                )}
+                {property.featured && (
+                  <Badge className="bg-accent text-accent-foreground">Destaque</Badge>
+                )}
+                {property.exclusive && (
+                  <Badge variant="outline" className="bg-background/90 text-foreground border-accent">
+                    Exclusivo
+                  </Badge>
+                )}
+              </div>
+              <h1 className="font-serif text-2xl md:text-3xl font-bold text-background mb-2">
+                {property.title || 'Imóvel'}
+              </h1>
+              <div className="flex items-center gap-2 text-background/90 mb-2">
+                <MapPin className="h-4 w-4" />
+                <span className="text-base">{property.location || 'Localização não informada'}</span>
+              </div>
+              <p className="font-serif text-xl font-bold text-background">
+                {property.price || 'Sob consulta'}
+              </p>
+              <p className="text-background/80 text-sm">
+                Código: {property.code || '—'}
+              </p>
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl font-bold text-background mb-2">
-              {property.title || 'Imóvel'}
-            </h1>
-            <div className="flex items-center gap-2 text-background/90 mb-2">
-              <MapPin className="h-5 w-5" />
-              <span className="text-lg">{property.location || 'Localização não informada'}</span>
-            </div>
-            <p className="font-serif text-2xl font-bold text-background">
-              {property.price || 'Sob consulta'}
-            </p>
-            <p className="text-background/80 font-medium">
-              Código: {property.code || '—'}
-            </p>
           </div>
-
-          {/* Image Counter */}
-          {(property.images?.length ?? 0) > 0 && (
-            <div className="absolute bottom-6 right-6 bg-background/20 rounded-lg px-3 py-1">
-              <span className="text-background text-sm">
-                {currentImageIndex + 1} / {property.images?.length ?? 0}
-              </span>
-            </div>
-          )}
         </div>
       </section>
+
+      {/* Image Gallery */}
+      {property.images && property.images.length > 1 && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="font-serif text-2xl font-bold mb-6">Galeria de Fotos</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {property.images.map((image, index) => (
+                <ImageLightbox
+                  key={index}
+                  images={property.images || []}
+                  initialIndex={index}
+                  trigger={
+                    <div className="aspect-square cursor-pointer overflow-hidden rounded-lg group">
+                      <img
+                        src={image}
+                        alt={`${property.title} - Foto ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Property Details */}
       <section className="py-12">
