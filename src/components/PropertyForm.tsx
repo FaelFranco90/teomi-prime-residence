@@ -180,8 +180,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
     try {
-      const propertyData = {
-        code: '', // Empty string will trigger auto-generation
+      const basePropertyData = {
         title: data.title,
         city: data.city,
         neighborhood: data.neighborhood || null,
@@ -215,17 +214,22 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       let newPropertyCode: string | null = null;
 
       if (property) {
-        // Update existing property
+        // Update existing property - don't send code field
         const { error } = await supabase
           .from('properties')
-          .update(propertyData)
+          .update(basePropertyData)
           .eq('id', property.id);
 
         if (error) throw error;
         propertyId = property.id;
         newPropertyCode = property.code; // Keep existing code
       } else {
-        // Create new property (trigger will generate code)
+        // Create new property - include empty code to trigger auto-generation
+        const propertyData = {
+          ...basePropertyData,
+          code: '', // Empty string will trigger auto-generation
+        };
+        
         const { data: newProperty, error } = await supabase
           .from('properties')
           .insert(propertyData)
