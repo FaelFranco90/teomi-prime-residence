@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/hooks/useSupabaseProperties';
 import { ImageUpload } from './ImageUpload';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, CheckCircle } from 'lucide-react';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { SelectedOwner } from '@/types/owners';
 import { fetchOwnersForProperty, syncPropertyOwners } from '@/hooks/useOwners';
@@ -21,8 +21,6 @@ import PropertyOwnersSection from '@/components/admin/PropertyOwnersSection';
 import { useAuthHook } from '@/hooks/useAuth';
 
 const propertySchema = z.object({
-  code: z.string().optional(),
-  title: z.string().min(1, 'Título é obrigatório'),
   city: z.string().min(1, 'Cidade é obrigatória'),
   neighborhood: z.string().optional(),
   condo_name: z.string().optional(),
@@ -48,6 +46,7 @@ const propertySchema = z.object({
   is_gated_community: z.boolean().default(false),
   is_published: z.boolean().default(true),
   status: z.enum(['active', 'sold', 'inactive']).default('active'),
+  title: z.string().min(1, 'Título é obrigatório'),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -62,9 +61,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(property?.images || []);
+  const [savedPropertyCode, setSavedPropertyCode] = useState<string | null>(null);
   const { toast } = useToast();
   const { types, loading: typesLoading } = usePropertyTypes();
-  const [previewCode, setPreviewCode] = useState<string | null>(null);
+  const { isAdmin } = useAuthHook();
 
   const {
     register,
@@ -75,7 +75,6 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   } = useForm<PropertyFormData>({
     resolver: zodResolver(propertySchema),
     defaultValues: property ? {
-      code: property.code,
       title: property.title,
       city: property.city || '',
       neighborhood: property.neighborhood || '',
@@ -97,7 +96,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       is_new: property.isNew || false,
       has_virtual_tour: property.virtualTour || false,
       is_gated_community: property.gatedCommunity || false,
-      is_published: true, // All existing properties are published by default
+      is_published: true,
       status: 'active' as const,
     } : {
       bedrooms: 0,
@@ -111,12 +110,11 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       is_gated_community: false,
       is_published: true,
       status: 'active' as const,
+      title: '',
     }
   });
 
   const selectedType = watch('property_type');
-  const currentCode = watch('code');
-  const { isAdmin } = useAuthHook(); // mantém visível apenas para admin atual
 
   // Proprietários (interno)
   const [selectedOwners, setSelectedOwners] = useState<SelectedOwner[]>([]);
@@ -148,58 +146,37 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     return parseInt(areaStr.replace(/[^\d]/g, ''));
   };
 
-  const fetchPreviewCode = async (typeKeyOrLabel: string) => {
-    if (!typeKeyOrLabel) {
-      setPreviewCode(null);
+  const generateTitleSuggestion = () => {
+    const formData = watch();
+    const propertyTypeLabel = types.find(t => t.key === formData.property_type)?.label || formData.property_type;
+    
+    if (!propertyTypeLabel || !formData.bedrooms || !formData.area || !formData.price || !formData.city) {
+      toast({
+        title: "Informações insuficientes",
+        description: "Preencha tipo, quartos, área, preço e cidade para gerar sugestão.",
+        variant: "destructive"
+      });
       return;
     }
-    const { data, error } = await supabase.rpc('preview_next_property_code', { _property_type: typeKeyOrLabel });
-    if (error) {
-      console.error('Erro ao pré-visualizar código:', error);
-      setPreviewCode(null);
-      return;
-    }
-    setPreviewCode(data ?? null);
-  };
 
-  useEffect(() => {
-    if (selectedType) {
-      fetchPreviewCode(selectedType);
-    } else {
-      setPreviewCode(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedType]);
+    const bedroomsText = formData.bedrooms > 0 ? `com ${formData.bedrooms} dormitório${formData.bedrooms > 1 ? 's' : ''}` : '';
+    const locationParts = [formData.condo_name, formData.neighborhood, formData.city, formData.state].filter(Boolean);
+    const location = locationParts.join(' - ');
+    
+    const suggestion = `${propertyTypeLabel} ${bedroomsText} à venda, ${formData.area} por ${formData.price} - ${location}`.trim();
+    
+    setValue('title', suggestion);
+    toast({
+      title: "Título sugerido aplicado",
+      description: "Você pode editá-lo conforme necessário."
+    });
+  };
 
   const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
     try {
-      // Checagem de duplicidade só quando o usuário informou um código manualmente
-      if (data.code && data.code.trim() !== '') {
-        const { data: existing, error: existingErr } = await supabase
-          .from('properties')
-          .select('id')
-          .eq('code', data.code)
-          .maybeSingle();
-
-        if (existingErr && existingErr.code !== 'PGRST116') {
-          // PGRST116 => No rows found for maybeSingle; ignoramos
-          throw existingErr;
-        }
-
-        if (existing && (!property || existing.id !== property.id)) {
-          toast({
-            title: 'Código já existe',
-            description: `O código ${data.code} já está em uso. Escolha outro.`,
-            variant: 'destructive',
-          });
-          setLoading(false);
-          return;
-        }
-      }
-
       const propertyData = {
-        code: data.code ?? '', // Se vier vazio, o trigger gera automaticamente
+        code: '', // Empty string will trigger auto-generation
         title: data.title,
         city: data.city,
         neighborhood: data.neighborhood || null,
@@ -207,7 +184,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         address: data.address || null,
         state: data.state || null,
         cep: data.cep || null,
-        location: [data.condo_name, data.neighborhood, data.city].filter(Boolean).join(', '), // Maintain compatibility
+        location: [data.condo_name, data.neighborhood, data.city].filter(Boolean).join(', '),
         price: data.price,
         area: data.area,
         property_type: data.property_type,
@@ -229,6 +206,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       };
 
       let propertyId: string;
+      let newPropertyCode: string | null = null;
 
       if (property) {
         // Update existing property
@@ -239,8 +217,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
         if (error) throw error;
         propertyId = property.id;
+        newPropertyCode = property.code; // Keep existing code
       } else {
-        // Create new property (gatilho no banco definirá code se vier vazio)
+        // Create new property (trigger will generate code)
         const { data: newProperty, error } = await supabase
           .from('properties')
           .insert(propertyData)
@@ -249,6 +228,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
         if (error) throw error;
         propertyId = newProperty.id;
+        newPropertyCode = newProperty.code;
       }
 
       // Handle image uploads if there are new images
@@ -262,13 +242,16 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           await syncPropertyOwners(propertyId, selectedOwners);
         } catch (e) {
           console.error('Erro ao sincronizar proprietários:', e);
-          // não interromper o fluxo principal; apenas logar e seguir
         }
       }
 
+      setSavedPropertyCode(newPropertyCode);
+      
       toast({
         title: property ? "Imóvel atualizado" : "Imóvel criado",
-        description: property ? "As alterações foram salvas com sucesso." : "O novo imóvel foi cadastrado com sucesso.",
+        description: property 
+          ? "As alterações foram salvas com sucesso." 
+          : `O novo imóvel foi cadastrado com sucesso. Código: ${newPropertyCode}`,
       });
 
       onSuccess();
@@ -342,80 +325,41 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       </CardHeader>
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="code">Código</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="code"
-                  {...register('code')}
-                  placeholder={property ? 'Código do imóvel' : 'Gerado automaticamente ao salvar'}
-                  disabled={!property} // Desabilitado na criação (gerado via trigger)
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => {
-                    if (selectedType && previewCode) {
-                      if (property) {
-                        // No modo edição, permitir aplicar a sugestão ao campo (se realmente quiser)
-                        setValue('code', previewCode);
-                        toast({ title: 'Código sugerido aplicado', description: previewCode });
-                      } else {
-                        // Na criação, apenas mostrar a sugestão sem modificar o campo
-                        toast({ title: 'Próximo código sugerido', description: previewCode });
-                      }
-                    } else if (!selectedType) {
-                      toast({ title: 'Selecione um tipo', description: 'Escolha o tipo para sugerir o código.', variant: 'destructive' });
-                    } else {
-                      toast({ title: 'Nenhuma sugestão disponível', description: 'Não foi possível obter uma sugestão.' });
-                    }
-                  }}
-                >
-                  <Wand2 className="h-4 w-4" />
-                  Sugerir
-                </Button>
+          {/* Código do imóvel salvo */}
+          {savedPropertyCode && (
+            <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                  Imóvel salvo com código: {savedPropertyCode}
+                </p>
               </div>
-              {errors.code && (
-                <p className="text-sm text-destructive">{errors.code.message}</p>
-              )}
-              {selectedType && previewCode && (
-                <p className="text-xs text-muted-foreground">Próximo código sugerido para "{selectedType}": {previewCode}</p>
-              )}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="property_type">Tipo de Imóvel *</Label>
-              <Select
-                value={watch('property_type')}
-                onValueChange={(value) => setValue('property_type', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={typesLoading ? 'Carregando tipos...' : 'Selecione o tipo'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {types
-                    .filter((t) => t.active)
-                    .map((t) => (
-                      <SelectItem key={t.id} value={t.key}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              {errors.property_type && (
-                <p className="text-sm text-destructive">{errors.property_type.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Título */}
+          {/* Tipo de Imóvel */}
           <div className="space-y-2">
-            <Label htmlFor="title">Título *</Label>
-            <Input id="title" {...register('title')} placeholder="Ex: Penthouse Exclusivo Vista Panorâmica" />
-            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+            <Label htmlFor="property_type">Tipo de Imóvel *</Label>
+            <Select
+              value={watch('property_type')}
+              onValueChange={(value) => setValue('property_type', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={typesLoading ? 'Carregando tipos...' : 'Selecione o tipo'} />
+              </SelectTrigger>
+              <SelectContent>
+                {types
+                  .filter((t) => t.active)
+                  .map((t) => (
+                    <SelectItem key={t.id} value={t.key}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {errors.property_type && (
+              <p className="text-sm text-destructive">{errors.property_type.message}</p>
+            )}
           </div>
 
           {/* Localização Estruturada */}
@@ -586,6 +530,32 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               existingImages={existingImages}
               onExistingImagesChange={setExistingImages}
             />
+          </div>
+
+          {/* Título - Movido para o final */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="title">Título *</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={generateTitleSuggestion}
+              >
+                <Wand2 className="h-4 w-4" />
+                Sugerir Título
+              </Button>
+            </div>
+            <Input 
+              id="title" 
+              {...register('title')} 
+              placeholder="Ex: Sobrado com 3 dormitórios à venda, 150m² por R$ 850.000 - Jardim das Flores - São Paulo/SP" 
+            />
+            {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+            <p className="text-xs text-muted-foreground">
+              O título é gerado automaticamente baseado nas informações do imóvel. Você pode editá-lo conforme necessário.
+            </p>
           </div>
 
           {/* Seção interna de Proprietários (apenas admin) */}

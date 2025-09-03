@@ -293,6 +293,7 @@ export type Database = {
           id: string
           image_url: string
           is_primary: boolean
+          is_public: boolean
           order_index: number
           property_id: string
         }
@@ -301,6 +302,7 @@ export type Database = {
           id?: string
           image_url: string
           is_primary?: boolean
+          is_public?: boolean
           order_index?: number
           property_id: string
         }
@@ -309,6 +311,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_primary?: boolean
+          is_public?: boolean
           order_index?: number
           property_id?: string
         }

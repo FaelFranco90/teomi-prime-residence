@@ -2,25 +2,77 @@ import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Upload, Image as ImageIcon, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { X, Upload, Image as ImageIcon, Star, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import heic2any from 'heic2any';
+
+interface ImageSettings {
+  url: string;
+  isPrimary: boolean;
+  isPublic: boolean;
+}
+
+interface NewImageSettings {
+  file: File;
+  isPrimary: boolean;
+  isPublic: boolean;
+}
 
 interface ImageUploadProps {
   images: File[];
   onImagesChange: (images: File[]) => void;
   existingImages?: string[];
   onExistingImagesChange?: (images: string[]) => void;
+  imageSettings?: ImageSettings[];
+  onImageSettingsChange?: (settings: ImageSettings[]) => void;
+  newImageSettings?: NewImageSettings[];
+  onNewImageSettingsChange?: (settings: NewImageSettings[]) => void;
 }
 
 export function ImageUpload({ 
   images, 
   onImagesChange, 
   existingImages = [], 
-  onExistingImagesChange 
+  onExistingImagesChange,
+  imageSettings = [],
+  onImageSettingsChange,
+  newImageSettings = [],
+  onNewImageSettingsChange
 }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const { toast } = useToast();
+
+  // Initialize settings if not provided
+  const initializeExistingSettings = () => {
+    if (imageSettings.length === 0 && existingImages.length > 0) {
+      const defaultSettings = existingImages.map((url, index) => ({
+        url,
+        isPrimary: index === 0,
+        isPublic: true
+      }));
+      onImageSettingsChange?.(defaultSettings);
+      return defaultSettings;
+    }
+    return imageSettings;
+  };
+
+  const initializeNewSettings = () => {
+    if (newImageSettings.length === 0 && images.length > 0) {
+      const defaultSettings = images.map((file, index) => ({
+        file,
+        isPrimary: index === 0 && existingImages.length === 0,
+        isPublic: true
+      }));
+      onNewImageSettingsChange?.(defaultSettings);
+      return defaultSettings;
+    }
+    return newImageSettings;
+  };
+
+  const currentExistingSettings = initializeExistingSettings();
+  const currentNewSettings = initializeNewSettings();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -65,6 +117,7 @@ export function ImageUpload({
 
     if (imageFiles.length > 0) {
       const newImages = [...images];
+      const newSettings = [...currentNewSettings];
       
       // Processa cada arquivo (converte HEIC se necessário)
       for (const file of imageFiles) {
@@ -103,6 +156,11 @@ export function ImageUpload({
           }
           
           newImages.push(processedFile);
+          newSettings.push({
+            file: processedFile,
+            isPrimary: newImages.length === 1 && existingImages.length === 0,
+            isPublic: true
+          });
         } catch (error) {
           console.error('Erro ao processar arquivo:', error);
           toast({
@@ -114,26 +172,52 @@ export function ImageUpload({
       }
       
       onImagesChange(newImages);
+      onNewImageSettingsChange?.(newSettings);
     }
   };
 
   const removeImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);
+    const newSettings = currentNewSettings.filter((_, i) => i !== index);
     onImagesChange(newImages);
+    onNewImageSettingsChange?.(newSettings);
   };
 
   const removeExistingImage = (index: number) => {
     if (onExistingImagesChange) {
       const newImages = existingImages.filter((_, i) => i !== index);
+      const newSettings = currentExistingSettings.filter((_, i) => i !== index);
       onExistingImagesChange(newImages);
+      onImageSettingsChange?.(newSettings);
     }
   };
 
-  const moveImage = (fromIndex: number, toIndex: number) => {
-    const newImages = [...images];
-    const [movedImage] = newImages.splice(fromIndex, 1);
-    newImages.splice(toIndex, 0, movedImage);
-    onImagesChange(newImages);
+  const toggleExistingPrimary = (index: number) => {
+    const newSettings = currentExistingSettings.map((setting, i) => ({
+      ...setting,
+      isPrimary: i === index
+    }));
+    onImageSettingsChange?.(newSettings);
+  };
+
+  const toggleNewPrimary = (index: number) => {
+    const newSettings = currentNewSettings.map((setting, i) => ({
+      ...setting,
+      isPrimary: i === index
+    }));
+    onNewImageSettingsChange?.(newSettings);
+  };
+
+  const toggleExistingPublic = (index: number) => {
+    const newSettings = [...currentExistingSettings];
+    newSettings[index] = { ...newSettings[index], isPublic: !newSettings[index].isPublic };
+    onImageSettingsChange?.(newSettings);
+  };
+
+  const toggleNewPublic = (index: number) => {
+    const newSettings = [...currentNewSettings];
+    newSettings[index] = { ...newSettings[index], isPublic: !newSettings[index].isPublic };
+    onNewImageSettingsChange?.(newSettings);
   };
 
   return (
@@ -178,38 +262,69 @@ export function ImageUpload({
       {existingImages.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Imagens atuais:</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {existingImages.map((imageUrl, index) => (
-              <Card key={index} className="relative overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative aspect-square">
-                    <img
-                      src={imageUrl || '/placeholder.svg'}
-                      alt={`Imagem ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                    />
-                    <div className="absolute top-2 left-2">
-                      {index === 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          <Star className="h-3 w-3 mr-1" />
-                          Principal
-                        </Badge>
-                      )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {existingImages.map((imageUrl, index) => {
+              const setting = currentExistingSettings[index] || { url: imageUrl, isPrimary: index === 0, isPublic: true };
+              return (
+                <Card key={index} className="relative overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative aspect-square">
+                      <img
+                        src={imageUrl || '/placeholder.svg'}
+                        alt={`Imagem ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                      />
+                      <div className="absolute top-2 left-2 flex flex-col gap-1">
+                        {setting.isPrimary && (
+                          <Badge variant="default" className="text-xs">
+                            <Star className="h-3 w-3 mr-1" />
+                            Principal
+                          </Badge>
+                        )}
+                        {!setting.isPublic && (
+                          <Badge variant="secondary" className="text-xs">
+                            <EyeOff className="h-3 w-3 mr-1" />
+                            Interno
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0"
+                        onClick={() => removeExistingImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2 h-6 w-6 p-0"
-                      onClick={() => removeExistingImage(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <div className="p-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`existing-primary-${index}`}
+                          checked={setting.isPrimary}
+                          onCheckedChange={() => toggleExistingPrimary(index)}
+                        />
+                        <Label htmlFor={`existing-primary-${index}`} className="text-xs">
+                          Principal
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`existing-public-${index}`}
+                          checked={setting.isPublic}
+                          onCheckedChange={() => toggleExistingPublic(index)}
+                        />
+                        <Label htmlFor={`existing-public-${index}`} className="text-xs">
+                          Visível no site
+                        </Label>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -218,42 +333,73 @@ export function ImageUpload({
       {images.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Novas imagens para upload:</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {images.map((image, index) => (
-              <Card key={index} className="relative overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative aspect-square">
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 left-2">
-                      {index === 0 && existingImages.length === 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          <Star className="h-3 w-3 mr-1" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {images.map((image, index) => {
+              const setting = currentNewSettings[index] || { file: image, isPrimary: index === 0 && existingImages.length === 0, isPublic: true };
+              return (
+                <Card key={index} className="relative overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative aspect-square">
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2 flex flex-col gap-1">
+                        {setting.isPrimary && (
+                          <Badge variant="default" className="text-xs">
+                            <Star className="h-3 w-3 mr-1" />
+                            Principal
+                          </Badge>
+                        )}
+                        {!setting.isPublic && (
+                          <Badge variant="secondary" className="text-xs">
+                            <EyeOff className="h-3 w-3 mr-1" />
+                            Interno
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 h-6 w-6 p-0"
+                        onClick={() => removeImage(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-xs text-background bg-foreground/75 px-2 py-1 rounded truncate">
+                          {image.name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-2 space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`new-primary-${index}`}
+                          checked={setting.isPrimary}
+                          onCheckedChange={() => toggleNewPrimary(index)}
+                        />
+                        <Label htmlFor={`new-primary-${index}`} className="text-xs">
                           Principal
-                        </Badge>
-                      )}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`new-public-${index}`}
+                          checked={setting.isPublic}
+                          onCheckedChange={() => toggleNewPublic(index)}
+                        />
+                        <Label htmlFor={`new-public-${index}`} className="text-xs">
+                          Visível no site
+                        </Label>
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2 h-6 w-6 p-0"
-                      onClick={() => removeImage(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <p className="text-xs text-background bg-foreground/75 px-2 py-1 rounded truncate">
-                        {image.name}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
