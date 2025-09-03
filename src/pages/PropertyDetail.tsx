@@ -17,11 +17,15 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  Video
+  Video,
+  Images
 } from "lucide-react";
 import { useSupabaseProperties, Property } from "@/hooks/useSupabaseProperties";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { ImageLightbox } from "@/components/ImageLightbox";
+import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
+import { PropertySpecsBar } from "@/components/PropertySpecsBar";
+import { PropertyActions } from "@/components/PropertyActions";
 
 
 export default function PropertyDetail() {
@@ -123,80 +127,88 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      {/* Hero Banner */}
-      <section className="relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative h-80 md:h-96 overflow-hidden rounded-lg mx-6 mt-6">
-            <img 
-              src={property.images?.[0] ?? '/placeholder.svg'} 
-              alt={property.title || 'Imóvel'}
-              className="w-full h-full object-cover"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-b from-secondary/20 to-background">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Property Header */}
+          <div className="mb-8">
+            <div className="flex flex-wrap gap-2 mb-4">
+              {property.isNew && (
+                <Badge className="bg-green-600 text-white">Novo</Badge>
+              )}
+              {property.featured && (
+                <Badge className="bg-accent text-accent-foreground">Destaque</Badge>
+              )}
+              {property.exclusive && (
+                <Badge variant="outline" className="border-accent text-accent">
+                  Exclusivo
+                </Badge>
+              )}
+            </div>
             
-            {/* Property Info Overlay */}
-            <div className="absolute bottom-6 left-6">
-              <div className="flex flex-wrap gap-2 mb-3">
-                {property.isNew && (
-                  <Badge className="bg-green-600 text-white">Novo</Badge>
-                )}
-                {property.featured && (
-                  <Badge className="bg-accent text-accent-foreground">Destaque</Badge>
-                )}
-                {property.exclusive && (
-                  <Badge variant="outline" className="bg-background/90 text-foreground border-accent">
-                    Exclusivo
-                  </Badge>
-                )}
-              </div>
-              <h1 className="font-serif text-2xl md:text-3xl font-bold text-background mb-2">
-                {property.title || 'Imóvel'}
-              </h1>
-              <div className="flex items-center gap-2 text-background/90 mb-2">
-                <MapPin className="h-4 w-4" />
-                <span className="text-base">{property.location || 'Localização não informada'}</span>
-              </div>
-              <p className="font-serif text-xl font-bold text-background">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4">
+              {property.title || 'Imóvel'}
+            </h1>
+            
+            <div className="flex items-center gap-2 text-muted-foreground mb-4">
+              <MapPin className="h-5 w-5" />
+              <span className="text-lg">{property.location || 'Localização não informada'}</span>
+            </div>
+            
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+              <p className="font-serif text-2xl md:text-3xl font-bold text-accent">
                 {property.price || 'Sob consulta'}
               </p>
-              <p className="text-background/80 text-sm">
+              <p className="text-muted-foreground">
                 Código: {property.code || '—'}
               </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Image Gallery */}
-      {property.images && property.images.length > 1 && (
-        <section className="py-8">
-          <div className="max-w-7xl mx-auto px-6">
-            <h2 className="font-serif text-2xl font-bold mb-6">Galeria de Fotos</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {property.images.map((image, index) => (
+          {/* Gallery Mosaic */}
+          {property.images && property.images.length > 0 && (
+            <div className="mb-8">
+              {property.images.length === 1 ? (
                 <ImageLightbox
-                  key={index}
-                  images={property.images || []}
-                  initialIndex={index}
+                  images={property.images}
+                  initialIndex={0}
                   trigger={
-                    <div className="aspect-square cursor-pointer overflow-hidden rounded-lg group">
+                    <div className="relative h-80 cursor-pointer overflow-hidden rounded-lg group">
                       <img
-                        src={image}
-                        alt={`${property.title} - Foto ${index + 1}`}
+                        src={property.images[0]}
+                        alt={property.title || 'Imóvel'}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                         }}
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
+                      <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+                        <Images className="h-4 w-4" />
+                        Ver fotos
+                      </div>
                     </div>
                   }
                 />
-              ))}
+              ) : (
+                <PropertyGalleryMosaic 
+                  images={property.images} 
+                  title={property.title || 'Imóvel'} 
+                />
+              )}
             </div>
-          </div>
-        </section>
-      )}
+          )}
+
+          {/* Specs Bar */}
+          <PropertySpecsBar
+            area={property.area}
+            bedrooms={property.bedrooms}
+            bathrooms={property.bathrooms}
+            parking={property.parking}
+            price={property.price}
+          />
+        </div>
+      </section>
 
       {/* Property Details */}
       <section className="py-12">
@@ -315,70 +327,67 @@ export default function PropertyDetail() {
               </Card>
             </div>
 
-            {/* Contact Form */}
+            {/* Enhanced Contact Panel */}
             <div className="space-y-6">
-              <Card className="sticky top-6">
+              <Card className="sticky top-6 shadow-luxury">
                 <CardContent className="p-6">
-                  <h2 className="font-serif text-2xl font-bold mb-6">Interesse neste Imóvel?</h2>
-                  
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <Input
-                        placeholder="Seu nome"
-                        value={contactForm.name}
-                        onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="email"
-                        placeholder="Seu e-mail"
-                        value={contactForm.email}
-                        onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        type="tel"
-                        placeholder="Seu telefone"
-                        value={contactForm.phone}
-                        onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Textarea
-                        placeholder="Mensagem (opcional)"
-                        value={contactForm.message}
-                        onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                        className="min-h-[100px]"
-                      />
-                    </div>
-                    
-                    <Button type="submit" variant="luxury" className="w-full">
-                      Solicitar Informações
-                    </Button>
-                  </form>
+                  {/* Price Display */}
+                  <div className="text-center mb-6 p-4 bg-accent/5 rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Preço</p>
+                    <p className="font-serif text-2xl font-bold text-accent">
+                      {property.price || 'Sob consulta'}
+                    </p>
+                  </div>
 
-                  <div className="space-y-3 mt-6 pt-6 border-t border-border">
-                    <Button variant="outline" className="w-full gap-2">
-                      <Phone className="h-4 w-4" />
-                      (12) 99763-5380
-                    </Button>
-                    
-                    <Button variant="outline" className="w-full gap-2">
-                      <Mail className="h-4 w-4" />
-                      contato@teomiprime.com
-                    </Button>
-                    
-                    {property.virtualTour && (
-                      <Button variant="gold" className="w-full gap-2">
-                        <Play className="h-4 w-4" />
-                        Tour Virtual
+                  {/* Contact Actions */}
+                  <PropertyActions
+                    propertyTitle={property.title || 'Imóvel'}
+                    virtualTour={property.virtualTour ? property.youtubeVideoUrl : undefined}
+                  />
+                  
+                  {/* Contact Form */}
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <h3 className="font-semibold mb-4">Ou envie uma mensagem</h3>
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                      <div>
+                        <Input
+                          placeholder="Seu nome"
+                          value={contactForm.name}
+                          onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          type="email"
+                          placeholder="Seu e-mail"
+                          value={contactForm.email}
+                          onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          type="tel"
+                          placeholder="Seu telefone"
+                          value={contactForm.phone}
+                          onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Textarea
+                          placeholder="Mensagem (opcional)"
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                          className="min-h-[80px] text-sm"
+                        />
+                      </div>
+                      
+                      <Button type="submit" variant="luxury" className="w-full">
+                        Enviar Mensagem
                       </Button>
-                    )}
+                    </form>
                   </div>
                 </CardContent>
               </Card>
