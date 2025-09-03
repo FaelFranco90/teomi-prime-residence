@@ -268,13 +268,13 @@ export function ImageUpload({
               return (
                 <Card key={index} className="relative overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="relative aspect-square">
-                      <img
-                        src={imageUrl || '/placeholder.svg'}
-                        alt={`Imagem ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                      />
+                   <div className="relative aspect-video">
+                     <img
+                       src={imageUrl || '/placeholder.svg'}
+                       alt={`Imagem ${index + 1}`}
+                       className="w-full h-full object-cover"
+                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                     />
                       <div className="absolute top-2 left-2 flex flex-col gap-1">
                         {setting.isPrimary && (
                           <Badge variant="default" className="text-xs">
@@ -339,12 +339,12 @@ export function ImageUpload({
               return (
                 <Card key={index} className="relative overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="relative aspect-square">
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                   <div className="relative aspect-video">
+                     <img
+                       src={URL.createObjectURL(image)}
+                       alt={`Preview ${index + 1}`}
+                       className="w-full h-full object-cover"
+                     />
                       <div className="absolute top-2 left-2 flex flex-col gap-1">
                         {setting.isPrimary && (
                           <Badge variant="default" className="text-xs">

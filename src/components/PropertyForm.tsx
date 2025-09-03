@@ -28,7 +28,8 @@ const propertySchema = z.object({
   state: z.string().optional(),
   cep: z.string().optional(),
   price: z.string().min(1, 'Preço é obrigatório'),
-  area: z.string().min(1, 'Área é obrigatória'),
+  area: z.string().min(1, 'Área total é obrigatória'),
+  area_usable: z.number().min(0).default(0),
   property_type: z.string().min(1, 'Tipo é obrigatório'),
   description: z.string().optional(),
   youtube_video_url: z.string().optional().refine((val) => {
@@ -61,6 +62,8 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(property?.images || []);
+  const [existingImageSettings, setExistingImageSettings] = useState<any[]>([]);
+  const [newImageSettings, setNewImageSettings] = useState<any[]>([]);
   const [savedPropertyCode, setSavedPropertyCode] = useState<string | null>(null);
   const { toast } = useToast();
   const { types, loading: typesLoading } = usePropertyTypes();
@@ -84,6 +87,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       cep: property.cep || '',
       price: property.price,
       area: property.area,
+      area_usable: 0, // Will be loaded from property data if available
       property_type: property.propertyType || '',
       description: '',
       youtube_video_url: property.youtubeVideoUrl || '',
@@ -103,6 +107,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       bathrooms: 0,
       suites: 0,
       parking: 0,
+      area_usable: 0,
       is_featured: false,
       is_exclusive: false,
       is_new: false,
@@ -187,6 +192,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         location: [data.condo_name, data.neighborhood, data.city].filter(Boolean).join(', '),
         price: data.price,
         area: data.area,
+        area_usable: data.area_usable || 0,
         property_type: data.property_type,
         description: data.description,
         youtube_video_url: data.youtube_video_url || null,
@@ -287,6 +293,8 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   };
 
   const handleImageUploads = async (propertyId: string) => {
+    if (images.length === 0) return;
+
     const uploadPromises = images.map(async (image, index) => {
       try {
         const fileName = `${propertyId}_${Date.now()}_${index}.${image.name.split('.').pop()}`;
@@ -297,11 +305,16 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           throw new Error(`Erro ao fazer upload da imagem ${image.name}: ${uploadError.message}`);
         }
         const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
+
+        // Get settings for this image
+        const setting = newImageSettings[index] || { isPrimary: index === 0 && existingImages.length === 0, isPublic: true };
+
         const { error: dbError } = await supabase.from('property_images').insert({
           property_id: propertyId,
           image_url: publicUrl,
-          is_primary: index === 0,
-          order_index: index,
+          is_primary: setting.isPrimary,
+          is_public: setting.isPublic,
+          order_index: existingImages.length + index,
         });
         if (dbError) {
           console.error('Database insert error:', dbError);
@@ -408,18 +421,49 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           </div>
 
           {/* Preço e Área */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price">Preço *</Label>
-              <Input id="price" {...register('price')} placeholder="Ex: R$ 2.800.000 ou Sob Consulta" />
-              {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Preço *</Label>
+                <Input id="price" {...register('price')} placeholder="Ex: R$ 2.800.000 ou Sob Consulta" />
+                {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="area">Área Total *</Label>
+                <Input id="area" {...register('area')} placeholder="Ex: 280m²" />
+                <p className="text-xs text-muted-foreground">Área total do terreno/imóvel</p>
+                {errors.area && <p className="text-sm text-destructive">{errors.area.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="area_usable">Área Útil/Construída</Label>
+                <Input 
+                  id="area_usable" 
+                  type="number" 
+                  min="0" 
+                  {...register('area_usable', { valueAsNumber: true })} 
+                  placeholder="Ex: 220"
+                />
+                <p className="text-xs text-muted-foreground">Em m² (apenas números)</p>
+                {errors.area_usable && <p className="text-sm text-destructive">{errors.area_usable.message}</p>}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="area">Área *</Label>
-              <Input id="area" {...register('area')} placeholder="Ex: 280m²" />
-              {errors.area && <p className="text-sm text-destructive">{errors.area.message}</p>}
-            </div>
+            {/* Preço por m² */}
+            {watch('price') && watch('area_usable') && watch('area_usable') > 0 && convertPriceToNumber(watch('price')) > 0 && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  💡 Preço por m²: R$ {(convertPriceToNumber(watch('price')) / watch('area_usable')).toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  Baseado na área útil de {watch('area_usable')} m²
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Detalhes */}
@@ -529,6 +573,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               onImagesChange={setImages}
               existingImages={existingImages}
               onExistingImagesChange={setExistingImages}
+              imageSettings={existingImageSettings}
+              onImageSettingsChange={setExistingImageSettings}
+              newImageSettings={newImageSettings}
+              onNewImageSettingsChange={setNewImageSettings}
             />
           </div>
 

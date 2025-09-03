@@ -166,14 +166,16 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
             is_primary,
+            is_public,
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -196,14 +198,16 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
             is_primary,
+            is_public,
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('id', id)
         .maybeSingle();
 
@@ -224,14 +228,16 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
             is_primary,
+            is_public,
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('code', code)
         .maybeSingle();
 

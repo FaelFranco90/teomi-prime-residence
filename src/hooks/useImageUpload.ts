@@ -124,14 +124,18 @@ export function useImageUpload() {
     }
   };
 
-  const saveImageRecords = async (propertyId: string, uploadResults: UploadResult[]): Promise<boolean> => {
+  const saveImageRecords = async (propertyId: string, uploadResults: UploadResult[], imageSettings: any[] = []): Promise<boolean> => {
     try {
-      const imageRecords = uploadResults.map((result, index) => ({
-        property_id: propertyId,
-        image_url: result.url,
-        is_primary: index === 0,
-        order_index: index,
-      }));
+      const imageRecords = uploadResults.map((result, index) => {
+        const setting = imageSettings[index];
+        return {
+          property_id: propertyId,
+          image_url: result.url,
+          is_primary: setting?.isPrimary || index === 0,
+          is_public: setting?.isPublic !== undefined ? setting.isPublic : true,
+          order_index: index,
+        };
+      });
 
       const { error } = await supabase
         .from('property_images')

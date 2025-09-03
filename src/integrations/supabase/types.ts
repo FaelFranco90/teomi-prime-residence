@@ -172,6 +172,7 @@ export type Database = {
           address: string | null
           area: string
           area_number: number
+          area_usable: number
           bathrooms: number
           bedrooms: number
           cep: string | null
@@ -204,6 +205,7 @@ export type Database = {
           address?: string | null
           area: string
           area_number?: number
+          area_usable?: number
           bathrooms?: number
           bedrooms?: number
           cep?: string | null
@@ -236,6 +238,7 @@ export type Database = {
           address?: string | null
           area?: string
           area_number?: number
+          area_usable?: number
           bathrooms?: number
           bedrooms?: number
           cep?: string | null
