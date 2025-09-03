@@ -62,6 +62,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState(property?.images || []);
+  const [originalImages] = useState(property?.images || []); // Track original images for deletion detection
   const [existingImageSettings, setExistingImageSettings] = useState<any[]>([]);
   const [newImageSettings, setNewImageSettings] = useState<any[]>([]);
   const [savedPropertyCode, setSavedPropertyCode] = useState<string | null>(null);
@@ -177,6 +178,119 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     });
   };
 
+  const persistExistingImageChanges = async (propertyId: string) => {
+    try {
+      // 1. Detect removed images
+      const currentUrls = existingImages; // existingImages is array of strings (URLs)
+      const originalUrls = originalImages; // originalImages is array of strings (URLs)
+      const removedUrls = originalUrls.filter(url => !currentUrls.includes(url));
+
+      // 2. Delete removed images from storage and database
+      if (removedUrls.length > 0) {
+        console.log('🗑️ Deleting images:', removedUrls);
+        toast({
+          title: "Removendo imagens...",
+          description: `Excluindo ${removedUrls.length} imagem(ns) do sistema.`
+        });
+
+        for (const removedUrl of removedUrls) {
+          // Delete from storage if it's a Supabase URL
+          if (removedUrl.includes('supabase.co') && removedUrl.includes('property-images')) {
+            try {
+              // Extract file path from URL
+              const urlParts = removedUrl.split('/property-images/');
+              if (urlParts.length > 1) {
+                const filePath = urlParts[1];
+                const { error: storageError } = await supabase.storage
+                  .from('property-images')
+                  .remove([filePath]);
+                
+                if (storageError) {
+                  console.error('Storage delete error:', storageError);
+                }
+              }
+            } catch (e) {
+              console.error('Error deleting from storage:', e);
+            }
+          }
+
+          // Delete from database
+          const { error: dbError } = await supabase
+            .from('property_images')
+            .delete()
+            .eq('property_id', propertyId)
+            .eq('image_url', removedUrl);
+
+          if (dbError) {
+            console.error('Database delete error:', dbError);
+            throw dbError;
+          }
+        }
+      }
+
+      // 3. Update is_primary and is_public flags for remaining existing images
+      if (existingImages.length > 0) {
+        console.log('✏️ Updating existing image settings');
+        
+        for (let i = 0; i < existingImages.length; i++) {
+          const imageUrl = existingImages[i]; // existingImages[i] is a string URL
+          const settings = existingImageSettings[i];
+          
+          if (settings) {
+            const { error: updateError } = await supabase
+              .from('property_images')
+              .update({
+                is_primary: settings.isPrimary || false,
+                is_public: settings.isPublic !== undefined ? settings.isPublic : true,
+              })
+              .eq('property_id', propertyId)
+              .eq('image_url', imageUrl);
+
+            if (updateError) {
+              console.error('Error updating image settings:', updateError);
+              throw updateError;
+            }
+          }
+        }
+      }
+
+      // 4. Ensure exactly one primary image exists
+      const { data: primaryImages } = await supabase
+        .from('property_images')
+        .select('id, image_url, is_primary')
+        .eq('property_id', propertyId)
+        .eq('is_primary', true);
+
+      if (!primaryImages || primaryImages.length === 0) {
+        // No primary image, set the first one as primary
+        const { data: firstImage } = await supabase
+          .from('property_images')
+          .select('id')
+          .eq('property_id', propertyId)
+          .order('order_index')
+          .limit(1)
+          .single();
+
+        if (firstImage) {
+          await supabase
+            .from('property_images')
+            .update({ is_primary: true })
+            .eq('id', firstImage.id);
+        }
+      }
+
+      console.log('✅ Image changes persisted successfully');
+    } catch (error) {
+      console.error('Error persisting image changes:', error);
+      toast({
+        title: "Erro ao processar imagens",
+        description: "Algumas alterações nas imagens podem não ter sido salvas.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   const onSubmit = async (data: PropertyFormData) => {
     setLoading(true);
     try {
@@ -241,8 +355,15 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         newPropertyCode = newProperty.code;
       }
 
+      // Persist existing image changes (deletions, settings updates)
+      if (property) {
+        console.log('💾 Persisting existing image changes...');
+        await persistExistingImageChanges(propertyId);
+      }
+
       // Handle image uploads if there are new images
       if (images.length > 0) {
+        console.log('📤 Uploading new images...');
         await handleImageUploads(propertyId);
       }
 
