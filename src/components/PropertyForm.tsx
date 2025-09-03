@@ -47,6 +47,7 @@ const propertySchema = z.object({
   has_virtual_tour: z.boolean().default(false),
   is_gated_community: z.boolean().default(false),
   is_published: z.boolean().default(true),
+  status: z.enum(['active', 'sold', 'inactive']).default('active'),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -97,6 +98,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       has_virtual_tour: property.virtualTour || false,
       is_gated_community: property.gatedCommunity || false,
       is_published: true, // All existing properties are published by default
+      status: 'active' as const,
     } : {
       bedrooms: 0,
       bathrooms: 0,
@@ -108,6 +110,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       has_virtual_tour: false,
       is_gated_community: false,
       is_published: true,
+      status: 'active' as const,
     }
   });
 
@@ -220,6 +223,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         has_virtual_tour: data.has_virtual_tour ?? false,
         is_gated_community: data.is_gated_community ?? false,
         is_published: data.is_published ?? true,
+        status: data.status ?? 'active',
         price_number: convertPriceToNumber(data.price),
         area_number: convertAreaToNumber(data.area),
       };
@@ -488,8 +492,28 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
           {/* Características */}
           <div className="space-y-4">
-            <Label>Características</Label>
+            <Label>Características e Status</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status">Status do Imóvel</Label>
+                <Select
+                  value={watch('status')}
+                  onValueChange={(value: 'active' | 'sold' | 'inactive') => setValue('status', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Ativo</SelectItem>
+                    <SelectItem value="sold">Vendido</SelectItem>
+                    <SelectItem value="inactive">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Status "Ativo" = publicado automaticamente. "Vendido" ou "Inativo" = não publicado.
+                </p>
+              </div>
+              
               <div className="flex items-center space-x-2">
                 <Switch id="is_featured" checked={watch('is_featured')} onCheckedChange={(checked) => setValue('is_featured', checked)} />
                 <Label htmlFor="is_featured">Imóvel em destaque</Label>
@@ -509,11 +533,18 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
                 <Switch id="is_gated_community" checked={watch('is_gated_community')} onCheckedChange={(checked) => setValue('is_gated_community', checked)} />
                 <Label htmlFor="is_gated_community">Condomínio fechado</Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch id="is_published" checked={watch('is_published')} onCheckedChange={(checked) => setValue('is_published', checked)} />
-                <Label htmlFor="is_published">Publicado no site</Label>
-              </div>
             </div>
+            
+            {selectedOwners.length > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                  ℹ️ Este imóvel está vinculado a {selectedOwners.length} proprietário(s)
+                </p>
+                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                  {selectedOwners.map(s => s.owner.full_name).join(', ')}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Upload de Imagens */}

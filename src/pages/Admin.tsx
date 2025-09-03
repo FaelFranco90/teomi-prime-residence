@@ -7,13 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminProperties, AdminProperty } from '@/hooks/useAdminProperties';
 import { useAuthHook } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { PropertyForm } from '@/components/PropertyForm';
-import { Plus, Edit, Trash2, LogOut, Search, Settings2 } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, Search, Settings2, Home, Users } from 'lucide-react';
 import PropertyTypesManager from '@/components/admin/PropertyTypesManager';
+import OwnersManagement from '@/components/admin/OwnersManagement';
 import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
@@ -27,6 +29,7 @@ export default function Admin() {
   const [cityFilter, setCityFilter] = useState('');
   const [featuredFilter, setFeaturedFilter] = useState('');
   const [publishFilter, setPublishFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<AdminProperty | undefined>(undefined);
   const [showTypesManager, setShowTypesManager] = useState(false);
@@ -65,8 +68,12 @@ export default function Admin() {
       );
     }
 
+    if (statusFilter && statusFilter !== 'all') {
+      filtered = filtered.filter(property => property.status === statusFilter);
+    }
+
     setFilteredProperties(filtered);
-  }, [properties, searchTerm, typeFilter, cityFilter, featuredFilter, publishFilter]);
+  }, [properties, searchTerm, typeFilter, cityFilter, featuredFilter, publishFilter, statusFilter]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -177,21 +184,34 @@ export default function Admin() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Gerenciar Imóveis</h2>
-          <Button className="gap-2" onClick={handleAddProperty}>
-            <Plus className="h-4 w-4" />
-            Adicionar Imóvel
-          </Button>
-        </div>
+        <Tabs defaultValue="properties" className="w-full">
+          <TabsList>
+            <TabsTrigger value="properties" className="gap-2">
+              <Home className="h-4 w-4" />
+              Imóveis
+            </TabsTrigger>
+            <TabsTrigger value="owners" className="gap-2">
+              <Users className="h-4 w-4" />
+              Proprietários
+            </TabsTrigger>
+          </TabsList>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Filtros</CardTitle>
-            <CardDescription>Filtre os imóveis por diferentes critérios</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <TabsContent value="properties" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Gerenciar Imóveis</h2>
+              <Button className="gap-2" onClick={handleAddProperty}>
+                <Plus className="h-4 w-4" />
+                Adicionar Imóvel
+              </Button>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Filtros</CardTitle>
+                <CardDescription>Filtre os imóveis por diferentes critérios</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -247,88 +267,138 @@ export default function Admin() {
                   <SelectItem value="unpublished">Não publicados</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Imóveis Cadastrados ({filteredProperties.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Localização</TableHead>
-                  <TableHead>Preço</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Publicação</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProperties.map((property) => (
-                  <TableRow key={property.id}>
-                    <TableCell className="font-mono">{property.code}</TableCell>
-                    <TableCell className="font-medium">{property.title}</TableCell>
-                    <TableCell>{property.location}</TableCell>
-                    <TableCell>{property.price}</TableCell>
-                    <TableCell>{property.propertyType || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {property.featured && (
-                          <Badge variant="secondary">Destaque</Badge>
-                        )}
-                        {property.exclusive && (
-                          <Badge variant="outline">Exclusivo</Badge>
-                        )}
-                        {property.isNew && (
-                          <Badge>Novo</Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={property.isPublished ? "default" : "secondary"}>
-                        {property.isPublished ? "Publicado" : "Oculto"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1"
-                          onClick={() => handleEditProperty(property)}
-                        >
-                          <Edit className="h-3 w-3" />
-                          Editar
-                        </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="gap-1"
-                          onClick={() => requestDelete(property.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          Excluir
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            
-            {filteredProperties.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhum imóvel encontrado com os filtros aplicados.
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="sold">Vendido</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Imóveis Cadastrados ({filteredProperties.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Imagem</TableHead>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Título</TableHead>
+                      <TableHead>Localização</TableHead>
+                      <TableHead>Preço</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Publicação</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProperties.map((property) => (
+                      <TableRow key={property.id}>
+                        <TableCell>
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                            {property.primaryImageUrl ? (
+                              <img 
+                                src={property.primaryImageUrl} 
+                                alt={property.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Home className="h-6 w-6 text-muted-foreground" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono">{property.code}</TableCell>
+                        <TableCell className="font-medium">{property.title}</TableCell>
+                        <TableCell>{property.location}</TableCell>
+                        <TableCell>{property.price}</TableCell>
+                        <TableCell>{property.propertyType || '-'}</TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <Badge 
+                              variant={
+                                property.status === 'active' ? 'default' : 
+                                property.status === 'sold' ? 'secondary' : 
+                                'outline'
+                              }
+                              className={
+                                property.status === 'active' ? 'bg-green-600' :
+                                property.status === 'sold' ? 'bg-blue-600' :
+                                'bg-orange-600 text-white'
+                              }
+                            >
+                              {property.status === 'active' ? 'Ativo' :
+                               property.status === 'sold' ? 'Vendido' :
+                               'Inativo'}
+                            </Badge>
+                            <div className="flex gap-1">
+                              {property.featured && (
+                                <Badge variant="secondary" className="text-xs">Destaque</Badge>
+                              )}
+                              {property.exclusive && (
+                                <Badge variant="outline" className="text-xs">Exclusivo</Badge>
+                              )}
+                              {property.isNew && (
+                                <Badge className="text-xs">Novo</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={property.isPublished ? "default" : "secondary"}>
+                            {property.isPublished ? "Publicado" : "Oculto"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => handleEditProperty(property)}
+                            >
+                              <Edit className="h-3 w-3" />
+                              Editar
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => requestDelete(property.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Excluir
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                
+                {filteredProperties.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum imóvel encontrado com os filtros aplicados.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="owners">
+            <OwnersManagement />
+          </TabsContent>
+        </Tabs>
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

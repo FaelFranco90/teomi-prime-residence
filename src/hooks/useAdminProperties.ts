@@ -5,14 +5,23 @@ import { SupabaseProperty, Property, convertSupabasePropertyToProperty } from '.
 // Extended interface for admin properties that includes publish status
 export interface AdminProperty extends Property {
   isPublished: boolean;
+  status: 'active' | 'sold' | 'inactive';
+  primaryImageUrl?: string;
 }
 
 // Convert SupabaseProperty to AdminProperty
-const convertSupabasePropertyToAdminProperty = (supabaseProperty: SupabaseProperty & { is_published: boolean }): AdminProperty => {
+const convertSupabasePropertyToAdminProperty = (supabaseProperty: SupabaseProperty & { is_published: boolean; status: 'active' | 'sold' | 'inactive' }): AdminProperty => {
   const baseProperty = convertSupabasePropertyToProperty(supabaseProperty);
+  
+  // Find primary image or first image for thumbnail
+  const primaryImageUrl = supabaseProperty.property_images?.find(img => img.is_primary)?.image_url 
+    || supabaseProperty.property_images?.[0]?.image_url;
+  
   return {
     ...baseProperty,
     isPublished: supabaseProperty.is_published || false,
+    status: supabaseProperty.status || 'active',
+    primaryImageUrl,
   };
 };
 

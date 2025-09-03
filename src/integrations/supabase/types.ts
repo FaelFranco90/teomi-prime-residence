@@ -194,6 +194,7 @@ export type Database = {
           price_number: number
           property_type: string | null
           state: string | null
+          status: Database["public"]["Enums"]["property_status"]
           suites: number
           title: string
           updated_at: string
@@ -225,6 +226,7 @@ export type Database = {
           price_number?: number
           property_type?: string | null
           state?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
           suites?: number
           title: string
           updated_at?: string
@@ -256,6 +258,7 @@ export type Database = {
           price_number?: number
           property_type?: string | null
           state?: string | null
+          status?: Database["public"]["Enums"]["property_status"]
           suites?: number
           title?: string
           updated_at?: string
@@ -357,6 +360,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "property_owners_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "owners_stats"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "property_owners_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
@@ -407,6 +417,24 @@ export type Database = {
       }
     }
     Views: {
+      owners_stats: {
+        Row: {
+          active_properties: number | null
+          created_at: string | null
+          document: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          inactive_properties: number | null
+          last_property_created_at: string | null
+          notes: string | null
+          phone: string | null
+          sold_properties: number | null
+          total_properties: number | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       properties_public: {
         Row: {
           area: string | null
@@ -517,6 +545,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
+      property_status: "active" | "sold" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -645,6 +674,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "viewer"],
+      property_status: ["active", "sold", "inactive"],
     },
   },
 } as const
