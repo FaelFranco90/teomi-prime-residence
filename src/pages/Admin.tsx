@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminProperties, AdminProperty } from '@/hooks/useAdminProperties';
 import { useAuthHook } from '@/hooks/useAuth';
@@ -33,8 +32,6 @@ export default function Admin() {
   const [showForm, setShowForm] = useState(false);
   const [editingProperty, setEditingProperty] = useState<AdminProperty | undefined>(undefined);
   const [showTypesManager, setShowTypesManager] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     let filtered = properties;
@@ -84,46 +81,29 @@ export default function Admin() {
     navigate('/');
   };
 
-  const requestDelete = (id: string) => {
-    setDeletingId(id);
-    setConfirmOpen(true);
-  };
-
-  const performDelete = async () => {
-    if (!deletingId) return;
-
+  const handleStatusChange = async (propertyId: string, newStatus: 'active' | 'sold' | 'inactive') => {
     try {
-      const { data: images } = await supabase
-        .from('property_images')
-        .select('image_url')
-        .eq('property_id', deletingId);
+      const { error } = await supabase
+        .from('properties')
+        .update({ 
+          status: newStatus,
+          is_published: newStatus === 'active' // Only active properties are published
+        })
+        .eq('id', propertyId);
 
-      if (images && images.length > 0) {
-        const imagePaths = images
-          .map((img) => img.image_url.split('/storage/v1/object/public/property-images/')[1])
-          .filter((p): p is string => !!p);
-
-        if (imagePaths.length > 0) {
-          await supabase.storage.from('property-images').remove(imagePaths);
-        }
-
-        await supabase.from('property_images').delete().eq('property_id', deletingId);
-      }
-
-      const { error } = await supabase.from('properties').delete().eq('id', deletingId);
       if (error) throw error;
 
-      toast({ title: 'Imóvel excluído', description: 'O imóvel foi removido com sucesso.' });
+      toast({
+        title: 'Status atualizado',
+        description: `Status alterado para ${newStatus === 'active' ? 'Ativo' : newStatus === 'sold' ? 'Vendido' : 'Inativo'}.`
+      });
       refetch();
     } catch (err: any) {
-      const msg = typeof err?.message === 'string' ? err.message : '';
-      const description = msg.includes('23503')
-        ? 'Não é possível excluir: registro relacionado.'
-        : 'Não foi possível excluir o imóvel.';
-      toast({ title: 'Erro ao excluir', description, variant: 'destructive' });
-    } finally {
-      setConfirmOpen(false);
-      setDeletingId(null);
+      toast({
+        title: 'Erro ao alterar status',
+        description: 'Não foi possível alterar o status do imóvel.',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -370,15 +350,19 @@ export default function Admin() {
                               <Edit className="h-3 w-3" />
                               Editar
                             </Button>
-                            <Button 
-                              variant="destructive" 
-                              size="sm" 
-                              className="gap-1"
-                              onClick={() => requestDelete(property.id)}
+                            <Select 
+                              value={property.status} 
+                              onValueChange={(newStatus) => handleStatusChange(property.id, newStatus as 'active' | 'sold' | 'inactive')}
                             >
-                              <Trash2 className="h-3 w-3" />
-                              Excluir
-                            </Button>
+                              <SelectTrigger className="w-28">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Ativo</SelectItem>
+                                <SelectItem value="sold">Vendido</SelectItem>
+                                <SelectItem value="inactive">Inativo</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -399,20 +383,6 @@ export default function Admin() {
             <OwnersManagement />
           </TabsContent>
         </Tabs>
-        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta ação não pode ser desfeita. O imóvel e suas imagens serão removidos.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={performDelete}>Excluir</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </main>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>

@@ -9,11 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/hooks/useSupabaseProperties';
 import { ImageUpload } from './ImageUpload';
-import { Loader2, Wand2, CheckCircle } from 'lucide-react';
+import { Loader2, Wand2, CheckCircle, Trash2 } from 'lucide-react';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { SelectedOwner } from '@/types/owners';
 import { fetchOwnersForProperty, syncPropertyOwners } from '@/hooks/useOwners';
@@ -68,6 +69,7 @@ interface PropertyImageRecord {
 
 export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProps) {
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingImageRecords, setExistingImageRecords] = useState<PropertyImageRecord[]>([]);
@@ -577,7 +579,58 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         throw error;
       }
     });
+
     await Promise.all(uploadPromises);
+  };
+
+  const handleDelete = async () => {
+    if (!property?.id) return;
+
+    setDeleting(true);
+    try {
+      // Delete images from storage and database
+      const { data: images } = await supabase
+        .from('property_images')
+        .select('image_url')
+        .eq('property_id', property.id);
+
+      if (images && images.length > 0) {
+        const imagePaths = images
+          .map((img) => img.image_url.split('/storage/v1/object/public/property-images/')[1])
+          .filter((p): p is string => !!p);
+
+        if (imagePaths.length > 0) {
+          await supabase.storage.from('property-images').remove(imagePaths);
+        }
+
+        await supabase.from('property_images').delete().eq('property_id', property.id);
+      }
+
+      // Delete property owners relationships
+      await supabase.from('property_owners').delete().eq('property_id', property.id);
+
+      // Delete the property
+      const { error } = await supabase.from('properties').delete().eq('id', property.id);
+      if (error) throw error;
+
+      toast({
+        title: 'Imóvel excluído',
+        description: 'O imóvel foi removido permanentemente do sistema.',
+      });
+      onSuccess();
+    } catch (err: any) {
+      const msg = typeof err?.message === 'string' ? err.message : '';
+      const description = msg.includes('23503')
+        ? 'Não é possível excluir: registro relacionado.'
+        : 'Não foi possível excluir o imóvel.';
+      toast({
+        title: 'Erro ao excluir',
+        description,
+        variant: 'destructive'
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -866,14 +919,63 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           />
 
           {/* Ações */}
-          <div className="flex justify-end space-x-4 pt-6">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {property ? 'Atualizar' : 'Salvar'} Imóvel
-            </Button>
+          <div className="flex justify-between space-x-4 pt-6">
+            <div>
+              {property && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      className="gap-2"
+                      disabled={loading || deleting}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Imóvel
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar exclusão permanente</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <div className="space-y-2">
+                          <p className="font-medium text-destructive">⚠️ Esta ação é irreversível!</p>
+                          <p>O imóvel <strong>{property.title}</strong> (código: {property.code}) será permanentemente excluído do banco de dados, incluindo:</p>
+                          <ul className="list-disc list-inside space-y-1 text-sm">
+                            <li>Todas as informações do imóvel</li>
+                            <li>Todas as imagens associadas</li>
+                            <li>Vínculos com proprietários</li>
+                            <li>Histórico de visualizações</li>
+                          </ul>
+                          <p className="text-sm font-medium">Não será possível recuperar estes dados após a exclusão.</p>
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={deleting}
+                      >
+                        {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Excluir Permanentemente
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+            
+            <div className="flex space-x-4">
+              <Button type="button" variant="outline" onClick={onCancel} disabled={loading || deleting}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={loading || deleting}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {property ? 'Atualizar' : 'Salvar'} Imóvel
+              </Button>
+            </div>
           </div>
         </form>
       </CardContent>
