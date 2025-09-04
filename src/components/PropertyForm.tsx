@@ -58,11 +58,20 @@ interface PropertyFormProps {
   onCancel: () => void;
 }
 
+interface PropertyImageRecord {
+  id: string;
+  image_url: string;
+  is_primary: boolean;
+  is_public: boolean;
+  order_index: number;
+}
+
 export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProps) {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState(property?.images || []);
-  const [originalImages] = useState(property?.images || []); // Track original images for deletion detection
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingImageRecords, setExistingImageRecords] = useState<PropertyImageRecord[]>([]);
+  const [originalImageRecords, setOriginalImageRecords] = useState<PropertyImageRecord[]>([]);
   const [existingImageSettings, setExistingImageSettings] = useState<any[]>([]);
   const [newImageSettings, setNewImageSettings] = useState<any[]>([]);
   const [savedPropertyCode, setSavedPropertyCode] = useState<string | null>(null);
@@ -125,6 +134,51 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   // Proprietários (interno)
   const [selectedOwners, setSelectedOwners] = useState<SelectedOwner[]>([]);
 
+  // Load complete property image records for proper ID-based management
+  useEffect(() => {
+    let ignore = false;
+    const loadPropertyImages = async () => {
+      if (property?.id) {
+        try {
+          console.log('🔄 Loading property images for', property.id);
+          const { data: imageRecords, error } = await supabase
+            .from('property_images')
+            .select('id, image_url, is_primary, is_public, order_index')
+            .eq('property_id', property.id)
+            .order('order_index');
+          
+          if (error) throw error;
+          
+          if (!ignore && imageRecords) {
+            console.log('📸 Loaded', imageRecords.length, 'image records');
+            setExistingImageRecords(imageRecords);
+            setOriginalImageRecords([...imageRecords]); // Deep copy for comparison
+            
+            // Initialize existingImages (URLs) and settings from database
+            const urls = imageRecords.map(record => record.image_url);
+            const settings = imageRecords.map(record => ({
+              isPrimary: record.is_primary,
+              isPublic: record.is_public
+            }));
+            
+            setExistingImages(urls);
+            setExistingImageSettings(settings);
+          }
+        } catch (e) {
+          console.error('Erro ao carregar imagens do imóvel:', e);
+        }
+      } else {
+        // New property - initialize empty
+        setExistingImages([]);
+        setExistingImageRecords([]);
+        setOriginalImageRecords([]);
+        setExistingImageSettings([]);
+      }
+    };
+    loadPropertyImages();
+    return () => { ignore = true; };
+  }, [property?.id]);
+
   useEffect(() => {
     let ignore = false;
     const loadOwners = async () => {
@@ -140,7 +194,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
       }
     };
     loadOwners();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { ignore = true; };
   }, [property?.id]);
 
   const convertPriceToNumber = (priceStr: string): number => {
@@ -180,75 +234,108 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
   const persistExistingImageChanges = async (propertyId: string) => {
     try {
-      // 1. Detect removed images
-      const currentUrls = existingImages; // existingImages is array of strings (URLs)
-      const originalUrls = originalImages; // originalImages is array of strings (URLs)
+      console.log('🔄 Starting persistExistingImageChanges for property:', propertyId);
+      
+      // Create map of current URL -> record for efficient lookup
+      const currentUrlToRecord = new Map<string, PropertyImageRecord>();
+      existingImageRecords.forEach(record => {
+        if (existingImages.includes(record.image_url)) {
+          currentUrlToRecord.set(record.image_url, record);
+        }
+      });
+
+      // 1. Detect removed images by comparing original records vs current URLs
+      const currentUrls = existingImages;
+      const originalUrls = originalImageRecords.map(record => record.image_url);
       const removedUrls = originalUrls.filter(url => !currentUrls.includes(url));
+      const removedRecords = originalImageRecords.filter(record => removedUrls.includes(record.image_url));
 
       // 2. Delete removed images from storage and database
-      if (removedUrls.length > 0) {
-        console.log('🗑️ Deleting images:', removedUrls);
+      if (removedRecords.length > 0) {
+        console.log('🗑️ Deleting', removedRecords.length, 'images:', removedUrls);
         toast({
           title: "Removendo imagens...",
-          description: `Excluindo ${removedUrls.length} imagem(ns) do sistema.`
+          description: `Excluindo ${removedRecords.length} imagem(ns) do sistema.`
         });
 
-        for (const removedUrl of removedUrls) {
+        for (const removedRecord of removedRecords) {
+          // Delete from database by ID (most reliable)
+          console.log('🗑️ Deleting from DB by ID:', removedRecord.id);
+          const { error: dbError } = await supabase
+            .from('property_images')
+            .delete()
+            .eq('id', removedRecord.id);
+
+          if (dbError) {
+            console.error('❌ Database delete error for ID', removedRecord.id, ':', dbError);
+            
+            // Fallback: try to delete by property_id + URL with ILIKE
+            console.log('🔄 Trying fallback deletion with ILIKE for URL:', removedRecord.image_url);
+            const { error: fallbackError } = await supabase
+              .from('property_images')
+              .delete()
+              .eq('property_id', propertyId)
+              .ilike('image_url', `%${removedRecord.image_url}%`);
+            
+            if (fallbackError) {
+              console.error('❌ Fallback delete also failed:', fallbackError);
+              throw dbError; // Throw original error
+            } else {
+              console.log('✅ Fallback deletion succeeded');
+            }
+          } else {
+            console.log('✅ Database deletion by ID succeeded');
+          }
+
           // Delete from storage if it's a Supabase URL
-          if (removedUrl.includes('supabase.co') && removedUrl.includes('property-images')) {
+          if (removedRecord.image_url.includes('supabase.co') && removedRecord.image_url.includes('property-images')) {
             try {
-              // Extract file path from URL
-              const urlParts = removedUrl.split('/property-images/');
+              // Extract file path from URL: /storage/v1/object/public/property-images/...
+              const urlParts = removedRecord.image_url.split('/storage/v1/object/public/property-images/');
               if (urlParts.length > 1) {
                 const filePath = urlParts[1];
+                console.log('🗑️ Deleting from storage:', filePath);
                 const { error: storageError } = await supabase.storage
                   .from('property-images')
                   .remove([filePath]);
                 
                 if (storageError) {
-                  console.error('Storage delete error:', storageError);
+                  console.error('❌ Storage delete error:', storageError);
+                } else {
+                  console.log('✅ Storage deletion succeeded');
                 }
               }
             } catch (e) {
-              console.error('Error deleting from storage:', e);
+              console.error('❌ Error deleting from storage:', e);
             }
-          }
-
-          // Delete from database
-          const { error: dbError } = await supabase
-            .from('property_images')
-            .delete()
-            .eq('property_id', propertyId)
-            .eq('image_url', removedUrl);
-
-          if (dbError) {
-            console.error('Database delete error:', dbError);
-            throw dbError;
           }
         }
       }
 
-      // 3. Update is_primary and is_public flags for remaining existing images
+      // 3. Update is_primary and is_public flags for remaining existing images using IDs
       if (existingImages.length > 0) {
-        console.log('✏️ Updating existing image settings');
+        console.log('✏️ Updating', existingImages.length, 'existing image settings');
         
         for (let i = 0; i < existingImages.length; i++) {
-          const imageUrl = existingImages[i]; // existingImages[i] is a string URL
+          const imageUrl = existingImages[i];
           const settings = existingImageSettings[i];
+          const record = currentUrlToRecord.get(imageUrl);
           
-          if (settings) {
+          if (settings && record) {
+            console.log('✏️ Updating image settings for ID:', record.id);
             const { error: updateError } = await supabase
               .from('property_images')
               .update({
                 is_primary: settings.isPrimary || false,
                 is_public: settings.isPublic !== undefined ? settings.isPublic : true,
               })
-              .eq('property_id', propertyId)
-              .eq('image_url', imageUrl);
+              .eq('id', record.id);
 
             if (updateError) {
-              console.error('Error updating image settings:', updateError);
+              console.error('❌ Error updating image settings for ID', record.id, ':', updateError);
               throw updateError;
+            } else {
+              console.log('✅ Updated settings for image ID:', record.id);
             }
           }
         }
@@ -263,25 +350,36 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
       if (!primaryImages || primaryImages.length === 0) {
         // No primary image, set the first one as primary
+        console.log('🔄 No primary image found, setting first as primary');
         const { data: firstImage } = await supabase
           .from('property_images')
           .select('id')
           .eq('property_id', propertyId)
           .order('order_index')
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (firstImage) {
           await supabase
             .from('property_images')
             .update({ is_primary: true })
             .eq('id', firstImage.id);
+          console.log('✅ Set first image as primary:', firstImage.id);
+        }
+      } else if (primaryImages.length > 1) {
+        // Multiple primary images, keep only the first one
+        console.log('⚠️ Multiple primary images found, keeping only first');
+        for (let i = 1; i < primaryImages.length; i++) {
+          await supabase
+            .from('property_images')
+            .update({ is_primary: false })
+            .eq('id', primaryImages[i].id);
         }
       }
 
       console.log('✅ Image changes persisted successfully');
     } catch (error) {
-      console.error('Error persisting image changes:', error);
+      console.error('❌ Error persisting image changes:', error);
       toast({
         title: "Erro ao processar imagens",
         description: "Algumas alterações nas imagens podem não ter sido salvas.",
@@ -373,6 +471,35 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           await syncPropertyOwners(propertyId, selectedOwners);
         } catch (e) {
           console.error('Erro ao sincronizar proprietários:', e);
+        }
+      }
+
+      // Reload images from database to reflect true state
+      if (property) {
+        console.log('🔄 Reloading images from database...');
+        try {
+          const { data: updatedImageRecords, error } = await supabase
+            .from('property_images')
+            .select('id, image_url, is_primary, is_public, order_index')
+            .eq('property_id', propertyId)
+            .order('order_index');
+          
+          if (!error && updatedImageRecords) {
+            setExistingImageRecords(updatedImageRecords);
+            setOriginalImageRecords([...updatedImageRecords]);
+            
+            const urls = updatedImageRecords.map(record => record.image_url);
+            const settings = updatedImageRecords.map(record => ({
+              isPrimary: record.is_primary,
+              isPublic: record.is_public
+            }));
+            
+            setExistingImages(urls);
+            setExistingImageSettings(settings);
+            console.log('✅ Reloaded', updatedImageRecords.length, 'images from database');
+          }
+        } catch (e) {
+          console.error('❌ Error reloading images:', e);
         }
       }
 
