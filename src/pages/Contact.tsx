@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, MessageCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CONTACT_CONFIG, getWhatsAppURL } from "@/config/contact";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -86,7 +87,7 @@ export default function Contact() {
                           value={formData.phone}
                           onChange={handleChange}
                           required
-                          placeholder="(12) 99763-5380"
+                          placeholder="(12) 99999-9999"
                         />
                       </div>
                     </div>
@@ -125,7 +126,7 @@ export default function Contact() {
                         variant="gold" 
                         type="button"
                         className="flex-1 gap-2"
-                        onClick={() => window.open('https://wa.me/5512999999999', '_blank')}
+                        onClick={() => window.open(getWhatsAppURL(), '_blank')}
                       >
                         <MessageCircle className="h-4 w-4" />
                         WhatsApp Direto
@@ -150,9 +151,8 @@ export default function Contact() {
                       <Phone className="h-5 w-5 text-accent" />
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-1">Telefone</h4>
-                      <p className="text-muted-foreground">(12) 3621-7647</p>
-                      <p className="text-muted-foreground">(12) 99763-5380</p>
+                      <h4 className="font-semibold mb-1">Telefone/WhatsApp</h4>
+                      <p className="text-muted-foreground">{CONTACT_CONFIG.PHONE_DISPLAY}</p>
                     </div>
                   </div>
 
@@ -162,7 +162,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold mb-1">E-mail</h4>
-                      <p className="text-muted-foreground">contato@teomiprime.com.br</p>
+                      <p className="text-muted-foreground">{CONTACT_CONFIG.EMAIL}</p>
                     </div>
                   </div>
 
@@ -173,8 +173,12 @@ export default function Contact() {
                     <div>
                       <h4 className="font-semibold mb-1">Endereço</h4>
                       <p className="text-muted-foreground">
-                        Avenida Independência, 70<br />
-                        Taubaté - SP
+                        {CONTACT_CONFIG.ADDRESS.split('\n').map((line, i) => (
+                          <span key={i}>
+                            {line}
+                            {i === 0 && <br />}
+                          </span>
+                        ))}
                       </p>
                     </div>
                   </div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Eye, Users, Award, CheckCircle, ArrowRight, Calendar, MessageCircle, TrendingUp, Star, Globe, Clock, Phone, Mail } from "lucide-react";
 import heroImage from "@/assets/hero-luxury-home.jpg";
+import { getWhatsAppURL } from "@/config/contact";
 
 const methodology = [
   {
@@ -149,7 +150,7 @@ export default function About() {
               variant="outline" 
               size="lg" 
               className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30"
-              onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de receber o relatório premium do mercado de alto padrão', '_blank')}
+              onClick={() => window.open(getWhatsAppURL('Gostaria de receber o relatório premium do mercado de alto padrão'), '_blank')}
             >
               Baixar Relatório Premium
             </Button>
@@ -285,7 +286,7 @@ export default function About() {
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-8 py-6 bg-background/25 hover:bg-background/35 text-background dark:text-foreground border-background/40 gap-3"
-                onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de falar com um especialista em imóveis de alto padrão', '_blank')}
+                onClick={() => window.open(getWhatsAppURL('Gostaria de falar com um especialista em imóveis de alto padrão'), '_blank')}
               >
                 <Users className="h-5 w-5" />
                 Fale com um Especialista
@@ -395,7 +396,7 @@ export default function About() {
                 variant="gold" 
                 size="lg" 
                 className="bg-background text-foreground hover:bg-background/90 text-lg px-8 py-6"
-                onClick={() => window.open('https://wa.me/5512997635380?text=Gostaria de solicitar uma avaliação patrimonial', '_blank')}
+                onClick={() => window.open(getWhatsAppURL('Gostaria de solicitar uma avaliação patrimonial'), '_blank')}
               >
                 Solicitar Avaliação Patrimonial
               </Button>
@@ -411,7 +412,7 @@ export default function About() {
                 variant="outline" 
                 size="lg" 
                 className="text-lg px-8 py-6 bg-background/10 hover:bg-background/20 text-background border-background/30 gap-3"
-                onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+                onClick={() => window.open(getWhatsAppURL(), '_blank')}
               >
                 <MessageCircle className="h-5 w-5" />
                 WhatsApp VIP

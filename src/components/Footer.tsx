@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, MessageCircle, Instagram, Facebook, Linkedin } from "lucide-react";
+import { CONTACT_CONFIG, getWhatsAppURL } from "@/config/contact";
 
 const navigation = {
   main: [
@@ -70,21 +71,21 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-accent" />
-                <span className="text-white/80 text-sm">(12) 3621-7647</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-accent" />
-                <span className="text-white/80 text-sm">(12) 99763-5380</span>
+                <span className="text-white/80 text-sm">Telefone/WhatsApp: {CONTACT_CONFIG.PHONE_DISPLAY}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-accent" />
-                <span className="text-white/80 text-sm">contato@teomiprime.com.br</span>
+                <span className="text-white/80 text-sm">{CONTACT_CONFIG.EMAIL}</span>
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-accent mt-0.5" />
                 <span className="text-white/80 text-sm">
-                  Avenida Independência, 70<br />
-                  Taubaté - SP
+                  {CONTACT_CONFIG.ADDRESS.split('\n').map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i === 0 && <br />}
+                    </span>
+                  ))}
                 </span>
               </div>
             </div>
@@ -100,7 +101,7 @@ export default function Footer() {
               <Button 
                 variant="gold" 
                 className="w-full gap-2"
-                onClick={() => window.open('https://wa.me/5512997635380', '_blank')}
+                onClick={() => window.open(getWhatsAppURL(), '_blank')}
               >
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp

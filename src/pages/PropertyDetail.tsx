@@ -26,6 +26,7 @@ import { ImageLightbox } from "@/components/ImageLightbox";
 import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
 import { PropertySpecsBar } from "@/components/PropertySpecsBar";
 import { PropertyActions } from "@/components/PropertyActions";
+import { getWhatsAppURL } from "@/config/contact";
 
 
 export default function PropertyDetail() {
@@ -399,7 +400,7 @@ export default function PropertyDetail() {
       {/* WhatsApp Floating Button */}
       <Button
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-luxury bg-green-600 hover:bg-green-700 z-50"
-        onClick={() => window.open('https://wa.me/5512999999999', '_blank')}
+        onClick={() => window.open(getWhatsAppURL(), '_blank')}
       >
         <MessageCircle className="h-6 w-6 text-white" />
       </Button>

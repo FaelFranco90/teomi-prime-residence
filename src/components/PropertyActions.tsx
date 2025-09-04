@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, Share2, Phone, Mail, Video, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CONTACT_CONFIG, getWhatsAppURL, getPhoneURL } from "@/config/contact";
 
 interface PropertyActionsProps {
   propertyTitle: string;
@@ -58,16 +59,16 @@ export function PropertyActions({
   };
 
   const handleCall = () => {
-    window.open('tel:+5512997635380', '_self');
+    window.open(getPhoneURL(), '_self');
   };
 
   const handleEmail = () => {
-    window.open('mailto:contato@teomiprime.com', '_self');
+    window.open(`mailto:${CONTACT_CONFIG.EMAIL}`, '_self');
   };
 
   const handleWhatsApp = () => {
-    const message = encodeURIComponent(`Olá! Tenho interesse no imóvel: ${propertyTitle}`);
-    window.open(`https://wa.me/5512997635380?text=${message}`, '_blank');
+    const message = `Olá! Tenho interesse no imóvel: ${propertyTitle}`;
+    window.open(getWhatsAppURL(message), '_blank');
   };
 
   const handleVirtualTour = () => {
