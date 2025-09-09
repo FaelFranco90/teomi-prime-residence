@@ -116,19 +116,33 @@ export function ImageUpload({
     }
 
     if (imageFiles.length > 0) {
+      const totalCurrentImages = existingImages.length + images.length;
+      const remainingSlots = 50 - totalCurrentImages;
+      
+      if (remainingSlots <= 0) {
+        toast({
+          title: "Limite atingido",
+          description: "Máximo de 50 imagens neste cadastro. Remova algumas imagens para adicionar novas.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Limita os arquivos ao número de slots disponíveis
+      const filesToProcess = imageFiles.slice(0, remainingSlots);
+      if (filesToProcess.length < imageFiles.length) {
+        toast({
+          title: "Limite parcialmente atingido",
+          description: `Apenas ${filesToProcess.length} de ${imageFiles.length} imagens foram adicionadas para respeitar o limite de 50 imagens.`,
+          variant: "destructive",
+        });
+      }
+
       const newImages = [...images];
       const newSettings = [...currentNewSettings];
       
       // Processa cada arquivo (converte HEIC se necessário)
-      for (const file of imageFiles) {
-        if (newImages.length >= 10) {
-          toast({
-            title: "Limite excedido",
-            description: "Máximo de 10 imagens por imóvel.",
-            variant: "destructive",
-          });
-          break;
-        }
+      for (const file of filesToProcess) {
         
         try {
           let processedFile = file;
@@ -250,7 +264,7 @@ export function ImageUpload({
                   Clique para fazer upload ou arraste as imagens aqui
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  PNG, JPG, JPEG, HEIC até 5MB cada. Máximo 10 imagens.
+                  PNG, JPG, JPEG, HEIC até 5MB cada. Máximo 50 imagens neste cadastro. Limite total do sistema: 100 por imóvel.
                 </p>
               </div>
             </div>

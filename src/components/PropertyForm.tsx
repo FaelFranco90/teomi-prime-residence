@@ -525,7 +525,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         const supabaseError = error as any;
         
         // Verificar erros específicos do Supabase
-        if (supabaseError.code === '42501' || supabaseError.message?.includes('insufficient_privilege') || supabaseError.message?.includes('permission denied')) {
+        if (supabaseError.message?.includes('Limite de 100 imagens por imóvel')) {
+          errorTitle = "Limite de imagens atingido";
+          errorMessage = "Este imóvel já tem o máximo de 100 imagens permitido pelo sistema. Remova algumas imagens antes de adicionar novas.";
+        } else if (supabaseError.code === '42501' || supabaseError.message?.includes('insufficient_privilege') || supabaseError.message?.includes('permission denied')) {
           errorTitle = "Erro de Permissão";
           errorMessage = "Você não tem permissão para realizar esta operação. Verifique se está logado como administrador ou editor.";
         } else if (supabaseError.code === '23505' || supabaseError.message?.includes('duplicate key')) {
