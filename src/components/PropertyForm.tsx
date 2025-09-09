@@ -67,6 +67,20 @@ interface PropertyImageRecord {
   order_index: number;
 }
 
+interface ImageSettings {
+  url: string;
+  isPrimary: boolean;
+  isPublic: boolean;
+  order: number;
+}
+
+interface NewImageSettings {
+  file: File;
+  isPrimary: boolean;
+  isPublic: boolean;
+  order: number;
+}
+
 export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProps) {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -74,8 +88,8 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingImageRecords, setExistingImageRecords] = useState<PropertyImageRecord[]>([]);
   const [originalImageRecords, setOriginalImageRecords] = useState<PropertyImageRecord[]>([]);
-  const [existingImageSettings, setExistingImageSettings] = useState<any[]>([]);
-  const [newImageSettings, setNewImageSettings] = useState<any[]>([]);
+  const [existingImageSettings, setExistingImageSettings] = useState<ImageSettings[]>([]);
+  const [newImageSettings, setNewImageSettings] = useState<NewImageSettings[]>([]);
   const [savedPropertyCode, setSavedPropertyCode] = useState<string | null>(null);
   const { toast } = useToast();
   const { types, loading: typesLoading } = usePropertyTypes();
@@ -159,8 +173,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             // Initialize existingImages (URLs) and settings from database
             const urls = imageRecords.map(record => record.image_url);
             const settings = imageRecords.map(record => ({
+              url: record.image_url,
               isPrimary: record.is_primary,
-              isPublic: record.is_public
+              isPublic: record.is_public,
+              order: record.order_index
             }));
             
             setExistingImages(urls);
@@ -314,7 +330,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         }
       }
 
-      // 3. Update is_primary and is_public flags for remaining existing images using IDs
+      // 3. Update is_primary, is_public flags and order_index for remaining existing images using IDs
       if (existingImages.length > 0) {
         console.log('✏️ Updating', existingImages.length, 'existing image settings');
         
@@ -330,6 +346,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               .update({
                 is_primary: settings.isPrimary || false,
                 is_public: settings.isPublic !== undefined ? settings.isPublic : true,
+                order_index: settings.isPrimary ? 0 : (settings.order || i + 1),
               })
               .eq('id', record.id);
 
@@ -492,8 +509,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             
             const urls = updatedImageRecords.map(record => record.image_url);
             const settings = updatedImageRecords.map(record => ({
+              url: record.image_url,
               isPrimary: record.is_primary,
-              isPublic: record.is_public
+              isPublic: record.is_public,
+              order: record.order_index
             }));
             
             setExistingImages(urls);
@@ -564,14 +583,18 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         const { data: { publicUrl } } = supabase.storage.from('property-images').getPublicUrl(filePath);
 
         // Get settings for this image
-        const setting = newImageSettings[index] || { isPrimary: index === 0 && existingImages.length === 0, isPublic: true };
+        const setting = newImageSettings[index] || { 
+          isPrimary: index === 0 && existingImages.length === 0, 
+          isPublic: true, 
+          order: index + 1 
+        };
 
         const { error: dbError } = await supabase.from('property_images').insert({
           property_id: propertyId,
           image_url: publicUrl,
           is_primary: setting.isPrimary,
           is_public: setting.isPublic,
-          order_index: existingImages.length + index,
+          order_index: setting.isPrimary ? 0 : setting.order,
         });
         if (dbError) {
           console.error('Database insert error:', dbError);
