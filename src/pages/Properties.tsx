@@ -6,13 +6,13 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePropertyFilters } from "@/hooks/usePropertyFilters";
-import { useSupabaseProperties } from "@/hooks/useSupabaseProperties";
+import { usePropertiesCache } from "@/hooks/usePropertiesCache";
 export default function Properties() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
   
-  const { properties, loading, error } = useSupabaseProperties();
+  const { properties, loading, error } = usePropertiesCache();
   
   const { 
     filters, 
