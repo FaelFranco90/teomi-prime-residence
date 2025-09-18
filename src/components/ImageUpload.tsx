@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -89,6 +90,15 @@ function SortableImageItem({ item, onRemove, onTogglePrimary, onTogglePublic, on
   };
 
   const imageUrl = item.type === 'existing' ? item.url : (item.file ? URL.createObjectURL(item.file) : '');
+  
+  // Cleanup object URL on unmount to prevent memory leaks
+  React.useEffect(() => {
+    return () => {
+      if (item.type === 'new' && item.file && imageUrl && imageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [imageUrl, item.type, item.file]);
   const displayName = item.type === 'existing' ? `Imagem ${item.index + 1}` : item.file?.name || '';
 
   return (
@@ -419,8 +429,8 @@ export function ImageUpload({
             isPublic: true,
             order: nextOrder++
           });
-        } catch (error) {
-          console.error('Erro ao processar arquivo:', error);
+          } catch (error) {
+            console.error('Error processing file:', error);
           toast({
             title: "Erro de conversão",
             description: `Não foi possível processar ${file.name}. Tente outro formato.`,

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { PropertyFilters } from "@/hooks/usePropertyFilters";
 import { usePropertyTypes } from "@/hooks/usePropertyTypes";
-import { supabase } from "@/integrations/supabase/client";
+import { useLocationCache } from "@/hooks/useLocationCache";
 
 interface SearchFormProps {
   filters: PropertyFilters;
@@ -17,7 +17,7 @@ interface SearchFormProps {
   hasActiveFilters: boolean;
 }
 
-export default function SearchForm({ 
+const SearchForm = memo(function SearchForm({ 
   filters, 
   onFilterChange, 
   onClearFilters, 
@@ -26,39 +26,7 @@ export default function SearchForm({
 }: SearchFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { types } = usePropertyTypes();
-  const [cities, setCities] = useState<string[]>([]);
-  const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
-  const [condos, setCondos] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchLocationData = async () => {
-      const { data, error } = await supabase
-        .from('properties_public')
-        .select('city, neighborhood, condo_name')
-        .eq('is_published', true);
-      
-      if (!error && data) {
-        // Extract unique cities
-        const uniqueCities = Array.from(new Set(
-          data.map((d: any) => d.city).filter(Boolean)
-        )).sort();
-        setCities(uniqueCities);
-
-        // Extract unique neighborhoods
-        const uniqueNeighborhoods = Array.from(new Set(
-          data.map((d: any) => d.neighborhood).filter(Boolean)
-        )).sort();
-        setNeighborhoods(uniqueNeighborhoods);
-
-        // Extract unique condos
-        const uniqueCondos = Array.from(new Set(
-          data.map((d: any) => d.condo_name).filter(Boolean)
-        )).sort();
-        setCondos(uniqueCondos);
-      }
-    };
-    fetchLocationData();
-  }, []);
+  const { cities, neighborhoods, condos, isLoading } = useLocationCache();
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-luxury">
@@ -85,14 +53,16 @@ export default function SearchForm({
               <SelectValue placeholder="Cidade" />
             </SelectTrigger>
             <SelectContent>
-              {cities.length > 0 ? (
+              {isLoading ? (
+                <SelectItem value="loading" disabled>Carregando cidades...</SelectItem>
+              ) : cities.length > 0 ? (
                 cities.map((city) => (
                   <SelectItem key={city} value={city}>
                     {city}
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="loading" disabled>Carregando cidades...</SelectItem>
+                <SelectItem value="empty" disabled>Nenhuma cidade encontrada</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -102,14 +72,16 @@ export default function SearchForm({
               <SelectValue placeholder="Bairro" />
             </SelectTrigger>
             <SelectContent>
-              {neighborhoods.length > 0 ? (
+              {isLoading ? (
+                <SelectItem value="loading" disabled>Carregando bairros...</SelectItem>
+              ) : neighborhoods.length > 0 ? (
                 neighborhoods.map((neighborhood) => (
                   <SelectItem key={neighborhood} value={neighborhood}>
                     {neighborhood}
                   </SelectItem>
                 ))
               ) : (
-                <SelectItem value="loading" disabled>Carregando bairros...</SelectItem>
+                <SelectItem value="empty" disabled>Nenhum bairro encontrado</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -161,14 +133,16 @@ export default function SearchForm({
                 <SelectValue placeholder="Condomínio" />
               </SelectTrigger>
               <SelectContent>
-                {condos.length > 0 ? (
+                {isLoading ? (
+                  <SelectItem value="loading" disabled>Carregando condomínios...</SelectItem>
+                ) : condos.length > 0 ? (
                   condos.map((condo) => (
                     <SelectItem key={condo} value={condo}>
                       {condo}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="loading" disabled>Carregando condomínios...</SelectItem>
+                  <SelectItem value="empty" disabled>Nenhum condomínio encontrado</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -254,4 +228,6 @@ export default function SearchForm({
       </CardContent>
     </Card>
   );
-}
+});
+
+export default SearchForm;

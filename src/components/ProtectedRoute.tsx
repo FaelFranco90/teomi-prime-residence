@@ -11,7 +11,9 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
 
   const hasAccess = requireAdmin ? isAdmin : (isAdmin || isEditor);
 
-  console.log('[route-debug] loading:', loading, 'user:', user?.id, user?.email, 'isAdmin:', isAdmin, 'isEditor:', isEditor, 'hasAccess:', hasAccess);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[route-debug] loading:', loading, 'user:', user?.id, user?.email, 'isAdmin:', isAdmin, 'isEditor:', isEditor, 'hasAccess:', hasAccess);
+  }
 
   if (loading) {
     return (

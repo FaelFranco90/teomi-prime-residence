@@ -30,14 +30,18 @@ export const useAuthHook = () => {
 
   const loadProfile = async (uid: string) => {
     try {
-      console.log('[auth-debug] fetching profile for uid:', uid);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[auth-debug] fetching profile for uid:', uid);
+      }
       const { data, error } = await supabase
         .from('profiles')
         .select('role,status')
         .eq('id', uid)
         .maybeSingle();
       if (error) throw error;
-      console.log('[auth-debug] profiles select result:', data);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[auth-debug] profiles select result:', data);
+      }
       setProfile(data ?? null);
     } catch (err) {
       console.error('[auth-debug] profiles select error (check RLS):', err);
@@ -66,7 +70,9 @@ export const useAuthHook = () => {
     })();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      console.log('[auth-debug] onAuthStateChange:', event, 'user:', sess?.user?.id, sess?.user?.email);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[auth-debug] onAuthStateChange:', event, 'user:', sess?.user?.id, sess?.user?.email);
+      }
       setSession(sess);
       const u = sess?.user ?? null;
       setUser(u);
@@ -88,7 +94,9 @@ export const useAuthHook = () => {
   }, []);
 
   useEffect(() => {
-    console.log('[auth-debug] loading:', loading, 'user:', user?.id, user?.email, 'role:', profile?.role, 'status:', profile?.status);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[auth-debug] loading:', loading, 'user:', user?.id, user?.email, 'role:', profile?.role, 'status:', profile?.status);
+    }
   }, [loading, user?.id, user?.email, profile?.role, profile?.status]);
 
   const signIn = async (email: string, password: string) => {

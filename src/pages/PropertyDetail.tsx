@@ -50,7 +50,9 @@ export default function PropertyDetail() {
       
       try {
         setLoading(true);
+      if (process.env.NODE_ENV === 'development') {
         console.log('PropertyDetail: fetching by code param', code);
+      }
         
         let propertyData = await getPropertyByCode(code);
         
@@ -58,7 +60,9 @@ export default function PropertyDetail() {
         
         const looksLikeUUID = /^[0-9a-fA-F-]{36}$/.test(code);
         if (!propertyData && looksLikeUUID) {
-          console.log('PropertyDetail: not found by code, trying by id');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('PropertyDetail: not found by code, trying by id');
+          }
           propertyData = await getPropertyById(code);
         }
         
@@ -110,7 +114,9 @@ export default function PropertyDetail() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Contact form submitted:', contactForm);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Contact form submitted:', contactForm);
+    }
     // In a real app, this would send the form data to an API
   };
 

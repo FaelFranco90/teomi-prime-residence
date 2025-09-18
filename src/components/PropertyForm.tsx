@@ -156,7 +156,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     const loadPropertyImages = async () => {
       if (property?.id) {
         try {
+        if (process.env.NODE_ENV === 'development') {
           console.log('🔄 Loading property images for', property.id);
+        }
           const { data: imageRecords, error } = await supabase
             .from('property_images')
             .select('id, image_url, is_primary, is_public, order_index')
@@ -166,7 +168,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
           if (error) throw error;
           
           if (!ignore && imageRecords) {
-            console.log('📸 Loaded', imageRecords.length, 'image records');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('📸 Loaded', imageRecords.length, 'image records');
+            }
             setExistingImageRecords(imageRecords);
             setOriginalImageRecords([...imageRecords]); // Deep copy for comparison
             
@@ -252,7 +256,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
   const persistExistingImageChanges = async (propertyId: string) => {
     try {
-      console.log('🔄 Starting persistExistingImageChanges for property:', propertyId);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Starting persistExistingImageChanges for property:', propertyId);
+      }
       
       // Create map of current URL -> record for efficient lookup
       const currentUrlToRecord = new Map<string, PropertyImageRecord>();
@@ -270,7 +276,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
       // 2. Delete removed images from storage and database
       if (removedRecords.length > 0) {
-        console.log('🗑️ Deleting', removedRecords.length, 'images:', removedUrls);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🗑️ Deleting', removedRecords.length, 'images:', removedUrls);
+        }
         toast({
           title: "Removendo imagens...",
           description: `Excluindo ${removedRecords.length} imagem(ns) do sistema.`
@@ -278,7 +286,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
 
         for (const removedRecord of removedRecords) {
           // Delete from database by ID (most reliable)
-          console.log('🗑️ Deleting from DB by ID:', removedRecord.id);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🗑️ Deleting from DB by ID:', removedRecord.id);
+          }
           const { error: dbError } = await supabase
             .from('property_images')
             .delete()
@@ -288,7 +298,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             console.error('❌ Database delete error for ID', removedRecord.id, ':', dbError);
             
             // Fallback: try to delete by property_id + URL with ILIKE
-            console.log('🔄 Trying fallback deletion with ILIKE for URL:', removedRecord.image_url);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔄 Trying fallback deletion with ILIKE for URL:', removedRecord.image_url);
+            }
             const { error: fallbackError } = await supabase
               .from('property_images')
               .delete()
@@ -298,10 +310,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             if (fallbackError) {
               console.error('❌ Fallback delete also failed:', fallbackError);
               throw dbError; // Throw original error
-            } else {
+            } else if (process.env.NODE_ENV === 'development') {
               console.log('✅ Fallback deletion succeeded');
             }
-          } else {
+          } else if (process.env.NODE_ENV === 'development') {
             console.log('✅ Database deletion by ID succeeded');
           }
 
@@ -312,14 +324,16 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               const urlParts = removedRecord.image_url.split('/storage/v1/object/public/property-images/');
               if (urlParts.length > 1) {
                 const filePath = urlParts[1];
-                console.log('🗑️ Deleting from storage:', filePath);
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('🗑️ Deleting from storage:', filePath);
+                }
                 const { error: storageError } = await supabase.storage
                   .from('property-images')
                   .remove([filePath]);
                 
                 if (storageError) {
                   console.error('❌ Storage delete error:', storageError);
-                } else {
+                } else if (process.env.NODE_ENV === 'development') {
                   console.log('✅ Storage deletion succeeded');
                 }
               }
@@ -396,7 +410,9 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
         }
       }
 
-      console.log('✅ Image changes persisted successfully');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Image changes persisted successfully');
+      }
     } catch (error) {
       console.error('❌ Error persisting image changes:', error);
       toast({

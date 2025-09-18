@@ -17,7 +17,9 @@ export default function PropertyOwnersSection({
   isVisible = true,
 }: PropertyOwnersSectionProps) {
   useEffect(() => {
-    console.log("[PropertyOwnersSection] selectedOwners", selectedOwners);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[PropertyOwnersSection] selectedOwners", selectedOwners);
+    }
   }, [selectedOwners]);
 
   if (!isVisible) return null;

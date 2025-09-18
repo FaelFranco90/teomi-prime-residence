@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Car, Square, MapPin, Play, Shield, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { withErrorBoundary } from "@/components/ErrorBoundary";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
   id: string;
@@ -25,7 +26,7 @@ interface PropertyCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-function PropertyCard({ 
+const PropertyCard = memo(function PropertyCard({ 
   id, 
   code = 'N/A',
   title = 'Imóvel sem título', 
@@ -44,6 +45,7 @@ function PropertyCard({
   isNew = false,
   viewMode = 'grid'
 }: PropertyCardProps) {
+  const navigate = useNavigate();
   // Defensive check for images array
   const safeImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'string') : [];
   const hasImages = safeImages.length > 0;
@@ -186,7 +188,7 @@ function PropertyCard({
               variant="outline" 
               size="sm"
               className="flex-1 text-xs"
-              onClick={() => window.location.href = `/imovel/${code}`}
+              onClick={() => navigate(`/imovel/${code}`)}
             >
               Ver Detalhes
             </Button>
@@ -195,7 +197,7 @@ function PropertyCard({
                 variant="default" 
                 size="sm"
                 className="gap-1 text-xs"
-                onClick={() => console.log('Open virtual tour')}
+                onClick={() => {/* Virtual tour handler */}}
               >
                 <Play className="h-3 w-3" />
                 Tour
@@ -379,7 +381,7 @@ function PropertyCard({
                     variant="outline" 
                     size="default"
                     className="gap-2"
-                    onClick={() => console.log('Open virtual tour')}
+                    onClick={() => {/* Virtual tour handler */}}
                   >
                     <Play className="h-4 w-4" />
                     Tour Virtual
@@ -389,7 +391,7 @@ function PropertyCard({
                   variant="default" 
                   size="default"
                   className="px-6"
-                  onClick={() => window.location.href = `/imovel/${code}`}
+                  onClick={() => navigate(`/imovel/${code}`)}
                 >
                   Ver Detalhes
                 </Button>
@@ -400,7 +402,7 @@ function PropertyCard({
       </div>
     </Card>
   );
-}
+});
 
 // Export the component wrapped with ErrorBoundary
 export default withErrorBoundary(PropertyCard);

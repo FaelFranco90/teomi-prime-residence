@@ -124,7 +124,9 @@ export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProp
       createdAt: supabaseProperty.created_at || '',
     };
   } catch (error) {
-    console.error('Error converting Supabase property:', error, 'property:', supabaseProperty);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error converting Supabase property:', error, 'property:', supabaseProperty);
+    }
     // Return a safe fallback object
     return {
       id: supabaseProperty?.id || '',
@@ -152,6 +154,7 @@ export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProp
   }
 };
 
+// Legacy hook - use usePropertiesCache for better performance
 export const useSupabaseProperties = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +188,9 @@ export const useSupabaseProperties = () => {
       const convertedProperties = data?.map(convertSupabasePropertyToProperty) || [];
       setProperties(convertedProperties);
     } catch (err) {
-      console.error('Error fetching properties:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching properties:', err);
+      }
       setError(err instanceof Error ? err.message : 'Falha ao buscar imóveis');
     } finally {
       setLoading(false);
@@ -217,7 +222,9 @@ export const useSupabaseProperties = () => {
 
       return data ? convertSupabasePropertyToProperty(data) : null;
     } catch (err) {
-      console.error('Error fetching property:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching property:', err);
+      }
       return null;
     }
   }, []);
@@ -247,7 +254,9 @@ export const useSupabaseProperties = () => {
 
       return data ? convertSupabasePropertyToProperty(data) : null;
     } catch (err) {
-      console.error('Error fetching property by code:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching property by code:', err);
+      }
       return null;
     }
   }, []);
