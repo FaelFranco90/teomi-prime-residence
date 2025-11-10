@@ -7,7 +7,6 @@ export interface PropertyImage {
   property_id: string;
   image_url: string;
   is_primary: boolean;
-  is_public: boolean;
   order_index: number;
 }
 
@@ -80,14 +79,14 @@ export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProp
     const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
     const isNew = Date.now() - createdAt.getTime() <= THIRTY_DAYS_MS;
 
-    // Process images with defensive checks - filter only public images
+    // Process images with defensive checks
     let images: string[] = [];
     if (Array.isArray(supabaseProperty.property_images)) {
       images = supabaseProperty.property_images
-        .filter(img => img && typeof img === 'object' && img.image_url && img.is_public) // Only public images
+        .filter(img => img && typeof img === 'object' && img.image_url) // Filter out invalid entries
         .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
         .map(img => resolveImageUrl(img.image_url))
-        .filter(url => url); // Keep all resolved URLs including placeholders
+        .filter(url => url && url !== '/placeholder.svg'); // Remove failed resolutions
     }
 
     // Ensure at least one placeholder if no valid images
@@ -170,7 +169,7 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -179,6 +178,7 @@ export const useSupabaseProperties = () => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -203,7 +203,7 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -212,6 +212,7 @@ export const useSupabaseProperties = () => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('id', id)
         .maybeSingle();
 
@@ -234,7 +235,7 @@ export const useSupabaseProperties = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -243,6 +244,7 @@ export const useSupabaseProperties = () => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('code', code)
         .maybeSingle();
 

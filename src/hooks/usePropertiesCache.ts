@@ -25,7 +25,7 @@ const fetchPropertiesFromDB = async (): Promise<Property[]> => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -34,6 +34,7 @@ const fetchPropertiesFromDB = async (): Promise<Property[]> => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -88,7 +89,7 @@ export const usePropertiesCache = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -97,6 +98,7 @@ export const usePropertiesCache = () => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('id', id)
         .maybeSingle();
 
@@ -120,7 +122,7 @@ export const usePropertiesCache = () => {
         .from('properties_public')
         .select(`
           *,
-          property_images (
+          property_images!inner (
             id,
             property_id,
             image_url,
@@ -129,6 +131,7 @@ export const usePropertiesCache = () => {
             order_index
           )
         `)
+        .eq('property_images.is_public', true)
         .eq('code', code)
         .maybeSingle();
 

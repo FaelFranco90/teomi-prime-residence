@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Car, Square, MapPin, Play, Shield, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { withErrorBoundary } from "@/components/ErrorBoundary";
 import { useNavigate } from "react-router-dom";
-import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface PropertyCardProps {
   id: string;
@@ -70,13 +69,11 @@ const PropertyCard = memo(function PropertyCard({
     return (
       <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
         <div className="relative aspect-[4/3] overflow-hidden">
-          <OptimizedImage
+          <img 
             src={safeImages[currentImageIndex] || '/placeholder.svg'} 
             alt={title || 'Imóvel'}
-            size="medium"
-            lazy={true}
-            blur={true}
-            className="w-full h-full transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
           {/* Navigation Arrows */}
@@ -219,13 +216,11 @@ const PropertyCard = memo(function PropertyCard({
         {/* Left Side - Main Image */}
         <div className="flex-shrink-0">
           <div className="relative w-80 h-60 rounded-lg overflow-hidden">
-            <OptimizedImage
+            <img 
               src={safeImages[currentImageIndex] || '/placeholder.svg'} 
               alt={title || 'Imóvel'}
-              size="medium"
-              lazy={true}
-              blur={true}
-              className="w-full h-full transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
             />
             
             {/* Navigation Arrows */}
@@ -294,13 +289,11 @@ const PropertyCard = memo(function PropertyCard({
                   }`}
                   onClick={() => setCurrentImageIndex(index)}
                 >
-                  <OptimizedImage
+                  <img 
                     src={image || '/placeholder.svg'} 
                     alt={`${title || 'Imóvel'} ${index + 1}`}
-                    size="small"
-                    lazy={true}
-                    blur={false}
-                    className="w-full h-full"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                   />
                   {safeImages.length > 6 && index === 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

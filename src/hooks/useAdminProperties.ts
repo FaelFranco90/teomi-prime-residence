@@ -44,7 +44,6 @@ export const useAdminProperties = () => {
             property_id,
             image_url,
             is_primary,
-            is_public,
             order_index
           )
         `)
@@ -75,7 +74,6 @@ export const useAdminProperties = () => {
             property_id,
             image_url,
             is_primary,
-            is_public,
             order_index
           )
         `)
@@ -104,7 +102,6 @@ export const useAdminProperties = () => {
             property_id,
             image_url,
             is_primary,
-            is_public,
             order_index
           )
         `)

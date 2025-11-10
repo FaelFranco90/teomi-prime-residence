@@ -1,6 +1,5 @@
 import { ImageLightbox } from "./ImageLightbox";
 import { Images } from "lucide-react";
-import { OptimizedImage } from "./OptimizedImage";
 
 interface PropertyGalleryMosaicProps {
   images: string[];
@@ -19,13 +18,13 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
           initialIndex={0}
           trigger={
             <div className="relative w-full h-full cursor-pointer overflow-hidden rounded-lg group">
-              <OptimizedImage
+              <img
                 src={images[0]}
                 alt={`${title} - Imagem principal`}
-                size="large"
-                lazy={false}
-                blur={true}
-                className="w-full h-full transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                }}
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
             </div>
@@ -45,13 +44,13 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
               initialIndex={index + 1}
               trigger={
                 <div className="relative w-full h-full cursor-pointer overflow-hidden rounded-lg group">
-                  <OptimizedImage
+                  <img
                     src={image}
                     alt={`${title} - Imagem ${index + 2}`}
-                    size="medium"
-                    lazy={true}
-                    blur={true}
-                    className="w-full h-full transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                    }}
                   />
                   {isLast && remainingCount > 0 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-semibold text-lg">
