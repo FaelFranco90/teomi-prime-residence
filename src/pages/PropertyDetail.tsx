@@ -27,6 +27,7 @@ import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
 import { PropertySpecsBar } from "@/components/PropertySpecsBar";
 import { PropertyActions } from "@/components/PropertyActions";
 import { getWhatsAppURL } from "@/config/contact";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 
 export default function PropertyDetail() {
@@ -181,13 +182,13 @@ export default function PropertyDetail() {
                   initialIndex={0}
                   trigger={
                     <div className="relative h-80 cursor-pointer overflow-hidden rounded-lg group">
-                      <img
+                      <OptimizedImage
                         src={property.images[0]}
                         alt={property.title || 'Imóvel'}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
-                        }}
+                        size="large"
+                        lazy={false}
+                        blur={true}
+                        className="w-full h-full transition-transform duration-300 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
                       <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
