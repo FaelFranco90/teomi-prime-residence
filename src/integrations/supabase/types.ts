@@ -536,14 +536,8 @@ export type Database = {
       }
     }
     Functions: {
-      is_admin_or_editor_active: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      next_property_code: {
-        Args: { _property_type: string }
-        Returns: string
-      }
+      is_admin_or_editor_active: { Args: never; Returns: boolean }
+      next_property_code: { Args: { _property_type: string }; Returns: string }
       preview_next_property_code: {
         Args: { _property_type: string }
         Returns: string
