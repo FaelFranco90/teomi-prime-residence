@@ -20,6 +20,7 @@ import { SelectedOwner } from '@/types/owners';
 import { fetchOwnersForProperty, syncPropertyOwners } from '@/hooks/useOwners';
 import PropertyOwnersSection from '@/components/admin/PropertyOwnersSection';
 import { useAuthHook } from '@/hooks/useAuth';
+import { formatPriceInput, isValidPrice } from '@/lib/currency';
 
 const propertySchema = z.object({
   city: z.string().min(1, 'Cidade é obrigatória'),
@@ -28,7 +29,7 @@ const propertySchema = z.object({
   address: z.string().optional(),
   state: z.string().optional(),
   cep: z.string().optional(),
-  price: z.string().min(1, 'Preço é obrigatório'),
+  price: z.string().min(1, 'Preço é obrigatório').refine(isValidPrice, 'Use o formato R$ ou "Sob Consulta"'),
   area: z.string().min(1, 'Área total é obrigatória'),
   area_usable: z.number().min(0).default(0),
   property_type: z.string().min(1, 'Tipo é obrigatório'),
@@ -772,7 +773,20 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="price">Preço *</Label>
-                <Input id="price" {...register('price')} placeholder="Ex: R$ 2.800.000 ou Sob Consulta" />
+                <Input 
+                  id="price" 
+                  value={watch('price') || ''}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    // Permite "Sob Consulta" sem formatação
+                    if (raw.toLowerCase().includes('sob') || raw.toLowerCase() === 's') {
+                      setValue('price', raw);
+                    } else {
+                      setValue('price', formatPriceInput(raw));
+                    }
+                  }}
+                  placeholder="Ex: R$ 2.800.000 ou Sob Consulta" 
+                />
                 {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
               </div>
 
