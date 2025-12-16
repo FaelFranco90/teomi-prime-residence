@@ -27,6 +27,9 @@ import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
 import { PropertySpecsBar } from "@/components/PropertySpecsBar";
 import { PropertyActions } from "@/components/PropertyActions";
 import { getWhatsAppURL } from "@/config/contact";
+import { useMetaTags } from "@/components/MetaTags";
+import { StructuredData, getPropertySchema } from "@/components/StructuredData";
+import { SEO_CONFIG, getFullUrl } from "@/config/seo";
 
 
 export default function PropertyDetail() {
@@ -41,6 +44,18 @@ export default function PropertyDetail() {
   });
 
   const { getPropertyByCode, getPropertyById } = useSupabaseProperties();
+
+  // Set meta tags dynamically based on property
+  useMetaTags({
+    title: property ? `${property.title} - Teomi Prime | Imóvel Luxury` : "Carregando imóvel...",
+    description: property ? (property.description || SEO_CONFIG.description) : SEO_CONFIG.description,
+    keywords: property ? `${property.title}, imóvel de luxo, ${property.city}, ${property.propertyType}` : SEO_CONFIG.keywords,
+    image: property?.galleryImages?.[0] || SEO_CONFIG.ogImage.url,
+    url: getFullUrl(`/imovel/${code}`),
+    canonical: getFullUrl(`/imovel/${code}`),
+    ogType: "product",
+    schema: property ? getPropertySchema(property) : undefined,
+  });
 
   useEffect(() => {
     let active = true;
@@ -122,12 +137,13 @@ export default function PropertyDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <StructuredData schema={getPropertySchema(property)} />
       {/* Back Navigation */}
       <div className="bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <Link to="/imoveis">
             <Button variant="ghost" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Voltar para Imóveis
             </Button>
           </Link>

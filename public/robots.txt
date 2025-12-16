@@ -1,14 +1,39 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# Teomi Prime Robots.txt
+# Regras gerais para todos os crawlers
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/login
+Disallow: /admin/403
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+# Crawl-delay para evitar sobrecarga do servidor
+Crawl-delay: 1
+
+# Regras específicas para Google
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Crawl-delay: 0
+
+# Regras específicas para Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Crawl-delay: 1
+
+# Regras para Twitter
+User-agent: Twitterbot
+Allow: /
+
+# Regras para Facebook
+User-agent: facebookexternalhit
+Allow: /
+
+# Sitemap
+Sitemap: https://prime.teomiimoveis.com.br/sitemap.xml
+

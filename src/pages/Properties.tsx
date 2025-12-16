@@ -7,12 +7,26 @@ import { SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePropertyFilters } from "@/hooks/usePropertyFilters";
 import { usePropertiesCache } from "@/hooks/usePropertiesCache";
+import { useMetaTags } from "@/components/MetaTags";
+import { StructuredData, getLocalBusinessSchema } from "@/components/StructuredData";
+import { PAGE_METADATA, SEO_CONFIG, getFullUrl } from "@/config/seo";
+
 export default function Properties() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('recent');
   
   const { properties, loading, error } = usePropertiesCache();
+  
+  // Set meta tags for SEO
+  useMetaTags({
+    title: PAGE_METADATA.properties.title,
+    description: PAGE_METADATA.properties.description,
+    keywords: PAGE_METADATA.properties.keywords,
+    url: getFullUrl('/imoveis'),
+    canonical: getFullUrl('/imoveis'),
+    schema: getLocalBusinessSchema(),
+  });
   
   const { 
     filters, 
@@ -77,6 +91,7 @@ export default function Properties() {
   }
 
   return <div className="min-h-screen bg-background">
+      <StructuredData schema={getLocalBusinessSchema()} />
       {/* Header */}
       <section className="py-16 bg-luxury-dark text-background">
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -90,7 +105,7 @@ export default function Properties() {
       </section>
 
       {/* Search Section */}
-      <section className="py-12 bg-background border-b border-border">
+      <section className="py-12 bg-background border-b border-border" aria-label="Filtrar imóveis">
         <div className="max-w-7xl mx-auto px-6">
           <SearchForm 
             filters={filters}
@@ -122,7 +137,7 @@ export default function Properties() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               {/* Sorting */}
               <div className="flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-48">
                     <SelectValue />
@@ -137,7 +152,7 @@ export default function Properties() {
               </div>
 
               <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="gap-2 lg:hidden">
-                <SlidersHorizontal className="h-4 w-4" />
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
                 Filtros
               </Button>
             </div>
@@ -146,7 +161,7 @@ export default function Properties() {
       </section>
 
       {/* Properties List */}
-      <section className="py-12">
+      <section className="py-12" aria-label="Lista de imóveis">
         <div className="max-w-7xl mx-auto px-6">
           <div className="space-y-4">
             {currentProperties.map(property => <PropertyCard key={property.id} {...property} viewMode="list" />)}
