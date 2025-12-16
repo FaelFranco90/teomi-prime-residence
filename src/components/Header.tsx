@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, MessageCircle } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getWhatsAppURL } from "@/config/contact";
+import { useTheme } from "next-themes";
+import logoLight from "@/assets/logo-teomi-light.png";
+import logoDark from "@/assets/logo-teomi-dark.png";
 
 const navigation = [
   { name: "Imóveis", href: "/imoveis" },
@@ -13,16 +16,29 @@ const navigation = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const location = useLocation();
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const logoSrc = mounted && resolvedTheme === "dark" ? logoDark : logoLight;
 
   return (
     <>
       <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
           <div className="flex lg:flex-1">
-            <Link to="/" className="-m-1.5 p-1.5">
-              <span className="font-serif text-2xl font-bold bg-gradient-silver bg-clip-text text-transparent">
-                Teomi Prime
+            <Link to="/" className="-m-1.5 p-1.5 flex flex-col items-start">
+              <img 
+                src={logoSrc} 
+                alt="Teomi Imóveis" 
+                className="h-8 w-auto"
+              />
+              <span className="text-[10px] font-semibold tracking-[0.25em] text-accent uppercase -mt-1 ml-0.5">
+                Prime
               </span>
             </Link>
           </div>
@@ -73,9 +89,14 @@ export default function Header() {
             <div className="fixed inset-0 z-50"></div>
             <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-border">
               <div className="flex items-center justify-between">
-                <Link to="/" className="-m-1.5 p-1.5">
-                  <span className="font-serif text-xl font-bold bg-gradient-silver bg-clip-text text-transparent">
-                    Teomi Prime
+                <Link to="/" className="-m-1.5 p-1.5 flex flex-col items-start">
+                  <img 
+                    src={logoSrc} 
+                    alt="Teomi Imóveis" 
+                    className="h-7 w-auto"
+                  />
+                  <span className="text-[9px] font-semibold tracking-[0.25em] text-accent uppercase -mt-1 ml-0.5">
+                    Prime
                   </span>
                 </Link>
                 <Button
