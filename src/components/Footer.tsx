@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, MessageCircle, Instagram, Facebook, Linkedin } from "lucide-react";
 import { CONTACT_CONFIG, getWhatsAppURL } from "@/config/contact";
+import logoDark from "@/assets/logo-teomi-dark.png";
 
 const navigation = {
   main: [
@@ -24,10 +25,17 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="mb-6">
-              <span className="font-serif text-2xl font-bold bg-gradient-silver bg-clip-text text-transparent">
-                Teomi Prime
-              </span>
-              <p className="text-sm text-white/80 mt-2">
+              <div className="flex flex-col items-start">
+                <img 
+                  src={logoDark} 
+                  alt="Teomi Imóveis" 
+                  className="h-10 w-auto"
+                />
+                <span className="text-xs font-semibold tracking-[0.25em] text-accent uppercase -mt-1 ml-0.5">
+                  Prime
+                </span>
+              </div>
+              <p className="text-sm text-white/80 mt-3">
                 Exclusividade, Confiança e Discrição no Mercado de Altíssimo Padrão
               </p>
             </div>
