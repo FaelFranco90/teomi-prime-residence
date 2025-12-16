@@ -76,6 +76,9 @@ const PropertyCard = memo(function PropertyCard({
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
+          {/* Gradient overlay for better text contrast */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+          
           {/* Navigation Arrows */}
           {safeImages.length > 1 && (
             <>
@@ -119,10 +122,10 @@ const PropertyCard = memo(function PropertyCard({
 
           {/* Price overlay */}
           <div className="absolute bottom-3 left-3">
-            <p className="text-background font-serif text-xl font-bold drop-shadow-lg">
+            <p className="text-white font-serif text-xl font-bold drop-shadow-lg">
               {price}
             </p>
-            <p className="text-background/90 text-xs font-medium drop-shadow">
+            <p className="text-white/90 text-xs font-medium drop-shadow">
               Cód: {code}
             </p>
           </div>
