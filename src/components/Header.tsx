@@ -35,9 +35,9 @@ export default function Header() {
               <img 
                 src={logoSrc} 
                 alt="Teomi Imóveis" 
-                className="h-8 w-auto"
+                className="h-10 w-auto"
               />
-              <span className="text-[10px] font-semibold tracking-[0.25em] text-accent uppercase -mt-1 ml-0.5">
+              <span className="text-[11px] font-semibold tracking-[0.2em] text-accent uppercase mt-0.5">
                 Prime
               </span>
             </Link>
@@ -93,9 +93,9 @@ export default function Header() {
                   <img 
                     src={logoSrc} 
                     alt="Teomi Imóveis" 
-                    className="h-7 w-auto"
+                    className="h-9 w-auto"
                   />
-                  <span className="text-[9px] font-semibold tracking-[0.25em] text-accent uppercase -mt-1 ml-0.5">
+                  <span className="text-[10px] font-semibold tracking-[0.2em] text-accent uppercase mt-0.5">
                     Prime
                   </span>
                 </Link>
