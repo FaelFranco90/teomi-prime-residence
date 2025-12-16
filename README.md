@@ -1,73 +1,123 @@
-# Welcome to your Lovable project
+# Teomi Prime - Imóveis de Luxo e Exclusividade
 
-## Project info
+## 📍 Projeto
 
-**URL**: https://lovable.dev/projects/172bf08a-7eee-40a9-aa6d-689f8c47f5a3
+**URL**: https://prime.teomiimoveis.com.br
 
-## How can I edit this code?
+Especialista em imóveis de altíssimo padrão com exclusividade e discrição.
 
-There are several ways of editing your application.
+## 🚀 Como Começar
 
-**Use Lovable**
+### Requisitos
+- Node.js 16+ e npm (ou Bun)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/172bf08a-7eee-40a9-aa6d-689f8c47f5a3) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+### Instalação
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clonar repositório
+git clone <GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navegar até a pasta
+cd teomi-prime-residence
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Instalar dependências
+npm install
+# ou
+bun install
 ```
 
-**Edit a file directly in GitHub**
+### Desenvolvimento
+```sh
+# Iniciar servidor de desenvolvimento
+npm run dev
+# ou
+bun run dev
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Build para Produção
+```sh
+# Fazer build
+npm run build
+# ou
+bun run build
 
-**Use GitHub Codespaces**
+# Preview do build
+npm run preview
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🛠️ Tecnologias Utilizadas
 
-## What technologies are used for this project?
+- **Vite** - Build tool rápido
+- **TypeScript** - Tipagem estática
+- **React 18** - Framework UI
+- **Tailwind CSS** - Estilização
+- **shadcn-ui** - Componentes
+- **Supabase** - Backend/Database
+- **React Query** - State management
+- **React Router** - Routing
 
-This project is built with:
+## 🔍 SEO & Otimizações
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Este projeto inclui implementação completa de SEO:
+- ✅ Meta tags dinâmicas por página
+- ✅ Open Graph para redes sociais  
+- ✅ JSON-LD Structured Data
+- ✅ Sitemap XML e Robots.txt
+- ✅ Canonical URLs
+- ✅ Acessibilidade (WCAG)
+- ✅ Performance otimizada
+- ✅ Mobile responsive
 
-## How can I deploy this project?
+**Documentação SEO:**
+- [README_SEO.md](./README_SEO.md) - Visão geral
+- [SEO_SUMMARY.md](./SEO_SUMMARY.md) - Resumo executivo
+- [SETUP_SEO.md](./SETUP_SEO.md) - Configuração passo a passo
+- [CHECKLIST_SEO.md](./CHECKLIST_SEO.md) - Checklist completo
 
-Simply open [Lovable](https://lovable.dev/projects/172bf08a-7eee-40a9-aa6d-689f8c47f5a3) and click on Share -> Publish.
+## 📁 Estrutura do Projeto
 
-## Can I connect a custom domain to my Lovable project?
+```
+src/
+├── pages/              # Páginas (Home, Properties, etc)
+├── components/         # Componentes reutilizáveis
+│   ├── MetaTags.tsx    # Hook de meta tags SEO
+│   └── StructuredData.tsx # JSON-LD schemas
+├── config/
+│   └── seo.ts          # Configuração centralizada SEO
+├── hooks/              # Hooks customizados
+├── lib/                # Funções utilitárias
+└── integrations/       # Integrações (Supabase)
+```
 
-Yes, you can!
+## 🌐 Deployment
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Para Vercel
+```bash
+vercel deploy
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Para Netlify
+```bash
+netlify deploy
+```
+
+### Para servidor próprio
+```bash
+npm run build
+# Fazer upload da pasta 'dist' para seu servidor
+```
+
+## 📚 Documentação Adicional
+
+- [SEO_IMPROVEMENTS.md](./SEO_IMPROVEMENTS.md) - Detalhes técnicos
+- [SEO_USAGE_GUIDE.md](./SEO_USAGE_GUIDE.md) - Exemplos de código
+
+## 📞 Contato & Informações
+
+- **Email**: contato@teomiimoveis.com.br
+- **Website**: https://prime.teomiimoveis.com.br
+- **Localização**: São Paulo, SP - Brasil
+
+---
+
+**Desenvolvido com ❤️ por Teomi Prime**
+
