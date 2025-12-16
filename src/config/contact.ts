@@ -3,7 +3,7 @@ export const CONTACT_CONFIG = {
   PHONE_DISPLAY: "(12) 99680-8136",
   PHONE_E164: "+5512996808136", // International format for tel: links
   WHATSAPP_NUMBER: "5512996808136", // For wa.me links
-  EMAIL: "contato@teomiprime.com.br",
+  EMAIL: "contato@teomiimoveis.com.br",
   ADDRESS: "Avenida Independência, 70\nTaubaté - SP"
 };
 

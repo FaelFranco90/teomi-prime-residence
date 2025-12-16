@@ -444,7 +444,7 @@ export default function About() {
           </div>
           <div className="text-sm opacity-75">
             <Mail className="h-4 w-4 inline mr-2" />
-            vip@teomiprime.com.br • Resposta em até 2 horas úteis
+            vip@teomiimoveis.com.br • Resposta em até 2 horas úteis
           </div>
         </div>
       </section>
