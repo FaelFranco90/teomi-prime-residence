@@ -247,13 +247,7 @@ export default function PropertyDetail() {
                             loading="lazy"
                             decoding="async"
                             onError={(e) => {
-                              // Fallback: se imagem otimizada falhar, tenta original
-                              const imgEl = e.currentTarget as HTMLImageElement;
-                              if (imgEl.src !== img && img !== '/placeholder.svg') {
-                                imgEl.src = img;
-                              } else {
-                                imgEl.src = '/placeholder.svg';
-                              }
+                              (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                             }}
                           />
                         );

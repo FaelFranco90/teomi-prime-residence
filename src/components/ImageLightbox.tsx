@@ -62,13 +62,7 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
               loading="lazy"
               decoding="async"
               onError={(e) => {
-                // Fallback: se imagem otimizada falhar, tenta original
-                const img = e.currentTarget as HTMLImageElement;
-                if (img.src !== currentImage && currentImage !== '/placeholder.svg') {
-                  img.src = currentImage;
-                } else {
-                  img.src = '/placeholder.svg';
-                }
+                (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
               }}
             />
           </div>
@@ -120,13 +114,7 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
-                      // Fallback: se imagem otimizada falhar, tenta original
-                      const img = e.currentTarget as HTMLImageElement;
-                      if (img.src !== image && image !== '/placeholder.svg') {
-                        img.src = image;
-                      } else {
-                        img.src = '/placeholder.svg';
-                      }
+                      (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                     }}
                   />
                 </button>

@@ -13,24 +13,8 @@ export interface OptimizedImageUrls {
 }
 
 /**
- * Converts object/public URL to render/image/public for optimized transformations
- * This uses Supabase's dedicated image transformation endpoint
- * 
- * If URL is already render/image, returns as-is (idempotent)
- */
-const toRenderUrl = (url: string): string => {
-  // Se já é render/image, retorna sem modificar
-  if (url.includes('/storage/v1/render/image/')) {
-    return url;
-  }
-  // Converte object/public para render/image/public
-  return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-};
-
-/**
- * Adds transformation parameters to image URL
- * Uses Supabase's /render/image/ endpoint for optimal performance
- * Falls back to original URL if not Supabase Storage
+ * Adds transformation parameters directly to object/public URLs
+ * Supabase supports transformations on /object/public/ endpoint
  */
 const addTransformParams = (
   url: string,
@@ -38,21 +22,18 @@ const addTransformParams = (
   quality: number = 80,
   resize: 'cover' | 'contain' | 'fill' = 'cover'
 ): string => {
-  const u = toRenderUrl(url);
-  
-  // Se não é URL Supabase, retorna original sem modificações
-  if (!u.includes('/storage/v1/')) {
+  // Se não é URL Supabase Storage, retorna original
+  if (!url.includes('/storage/v1/object/public/')) {
     return url;
   }
   
-  const sep = u.includes('?') ? '&' : '?';
-  return `${u}${sep}width=${width}&quality=${quality}&resize=${resize}`;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}width=${width}&quality=${quality}&resize=${resize}`;
 };
 
 /**
  * Generates optimized image URLs with multiple sizes for responsive loading
- * Uses Supabase Storage's /render/image/ endpoint for transformations
- * Falls back to original URL if transformation would fail
+ * Uses Supabase Storage transformations with /object/public/ endpoint
  */
 export function generateOptimizedImageUrls(originalUrl: string): OptimizedImageUrls {
   if (!originalUrl || typeof originalUrl !== 'string') {
@@ -60,9 +41,8 @@ export function generateOptimizedImageUrls(originalUrl: string): OptimizedImageU
     return { tiny: p, small: p, medium: p, large: p, full: p };
   }
 
-  // Detect Supabase Storage URLs (works with both object and render endpoints)
-  const isSupabaseStorage =
-    originalUrl.includes('/storage/v1/object/') || originalUrl.includes('/storage/v1/render/image/');
+  // Detect Supabase Storage URLs
+  const isSupabaseStorage = originalUrl.includes('/storage/v1/object/public/');
 
   if (!isSupabaseStorage) {
     // For non-Supabase URLs, return the original
@@ -75,14 +55,13 @@ export function generateOptimizedImageUrls(originalUrl: string): OptimizedImageU
     };
   }
 
-  // Generate multiple sizes using Supabase's optimized render endpoint
-  // Fallback: se transformação falhar (erro 404), o onError no <img> volta para originalUrl
+  // Generate multiple sizes using Supabase transformations
   return {
     tiny: addTransformParams(originalUrl, 320, 70, 'cover'),      // Thumbnails - lower quality, smaller
     small: addTransformParams(originalUrl, 640, 80, 'cover'),     // Mobile - standard quality
     medium: addTransformParams(originalUrl, 1024, 85, 'cover'),   // Tablet - good quality
     large: addTransformParams(originalUrl, 1600, 90, 'cover'),    // Desktop - high quality (1600px sufficient)
-    full: originalUrl,                                             // Original - full quality (fallback seguro)
+    full: originalUrl,                                             // Original - full quality
   };
 }
 
