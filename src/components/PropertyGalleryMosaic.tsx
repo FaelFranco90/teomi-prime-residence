@@ -31,7 +31,13 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
                 loading="lazy"
                 decoding="async"
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                  // Fallback: se imagem otimizada falhar, tenta original
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src !== mainImageUrl && mainImageUrl !== '/placeholder.svg') {
+                    img.src = mainImageUrl;
+                  } else {
+                    img.src = '/placeholder.svg';
+                  }
                 }}
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
@@ -59,7 +65,13 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                      // Fallback: se imagem otimizada falhar, tenta original
+                      const img = e.currentTarget as HTMLImageElement;
+                      if (img.src !== image && image !== '/placeholder.svg') {
+                        img.src = image;
+                      } else {
+                        img.src = '/placeholder.svg';
+                      }
                     }}
                   />
                   {isLast && remainingCount > 0 && (

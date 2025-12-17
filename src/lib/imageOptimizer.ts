@@ -15,14 +15,22 @@ export interface OptimizedImageUrls {
 /**
  * Converts object/public URL to render/image/public for optimized transformations
  * This uses Supabase's dedicated image transformation endpoint
+ * 
+ * If URL is already render/image, returns as-is (idempotent)
  */
 const toRenderUrl = (url: string): string => {
+  // Se já é render/image, retorna sem modificar
+  if (url.includes('/storage/v1/render/image/')) {
+    return url;
+  }
+  // Converte object/public para render/image/public
   return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
 };
 
 /**
  * Adds transformation parameters to image URL
  * Uses Supabase's /render/image/ endpoint for optimal performance
+ * Falls back to original URL if not Supabase Storage
  */
 const addTransformParams = (
   url: string,
@@ -31,6 +39,12 @@ const addTransformParams = (
   resize: 'cover' | 'contain' | 'fill' = 'cover'
 ): string => {
   const u = toRenderUrl(url);
+  
+  // Se não é URL Supabase, retorna original sem modificações
+  if (!u.includes('/storage/v1/')) {
+    return url;
+  }
+  
   const sep = u.includes('?') ? '&' : '?';
   return `${u}${sep}width=${width}&quality=${quality}&resize=${resize}`;
 };
@@ -38,6 +52,7 @@ const addTransformParams = (
 /**
  * Generates optimized image URLs with multiple sizes for responsive loading
  * Uses Supabase Storage's /render/image/ endpoint for transformations
+ * Falls back to original URL if transformation would fail
  */
 export function generateOptimizedImageUrls(originalUrl: string): OptimizedImageUrls {
   if (!originalUrl || typeof originalUrl !== 'string') {
@@ -61,12 +76,13 @@ export function generateOptimizedImageUrls(originalUrl: string): OptimizedImageU
   }
 
   // Generate multiple sizes using Supabase's optimized render endpoint
+  // Fallback: se transformação falhar (erro 404), o onError no <img> volta para originalUrl
   return {
     tiny: addTransformParams(originalUrl, 320, 70, 'cover'),      // Thumbnails - lower quality, smaller
     small: addTransformParams(originalUrl, 640, 80, 'cover'),     // Mobile - standard quality
     medium: addTransformParams(originalUrl, 1024, 85, 'cover'),   // Tablet - good quality
     large: addTransformParams(originalUrl, 1600, 90, 'cover'),    // Desktop - high quality (1600px sufficient)
-    full: originalUrl,                                             // Original - full quality
+    full: originalUrl,                                             // Original - full quality (fallback seguro)
   };
 }
 

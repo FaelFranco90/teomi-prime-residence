@@ -83,6 +83,15 @@ const PropertyCard = memo(function PropertyCard({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             decoding="async"
+            onError={(e) => { 
+              // Fallback: se imagem otimizada falhar, tenta original
+              const img = e.currentTarget as HTMLImageElement;
+              if (img.src !== currentImage && currentImage !== '/placeholder.svg') {
+                img.src = currentImage;
+              } else {
+                img.src = '/placeholder.svg';
+              }
+            }}
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
@@ -240,7 +249,15 @@ const PropertyCard = memo(function PropertyCard({
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
               decoding="async"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+              onError={(e) => { 
+                // Fallback: se imagem otimizada falhar, tenta original
+                const img = e.currentTarget as HTMLImageElement;
+                if (img.src !== currentImageList && currentImageList !== '/placeholder.svg') {
+                  img.src = currentImageList;
+                } else {
+                  img.src = '/placeholder.svg';
+                }
+              }}
             />
             
             {/* Navigation Arrows */}
@@ -315,7 +332,15 @@ const PropertyCard = memo(function PropertyCard({
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                    onError={(e) => { 
+                      // Fallback: se imagem otimizada falhar, tenta original
+                      const img = e.currentTarget as HTMLImageElement;
+                      if (img.src !== image && image) {
+                        img.src = image;
+                      } else {
+                        img.src = '/placeholder.svg';
+                      }
+                    }}
                   />
                   {safeImages.length > 6 && index === 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
