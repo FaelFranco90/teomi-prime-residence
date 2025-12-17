@@ -68,6 +68,7 @@ export interface Property {
   isNew?: boolean;
   propertyType?: string;
   youtubeVideoUrl?: string;
+  description?: string;
   priceNumber: number;
   areaNumber: number;
   createdAt: string;
@@ -119,6 +120,7 @@ export const convertSupabasePropertyToProperty = (supabaseProperty: SupabaseProp
       isNew,
       propertyType: supabaseProperty.property_type || undefined,
       youtubeVideoUrl: supabaseProperty.youtube_video_url || undefined,
+      description: supabaseProperty.description || undefined,
       priceNumber: supabaseProperty.price_number || 0,
       areaNumber: supabaseProperty.area_number || 0,
       createdAt: supabaseProperty.created_at || '',
