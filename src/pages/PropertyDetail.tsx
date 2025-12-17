@@ -21,7 +21,6 @@ import {
   Images
 } from "lucide-react";
 import { useSupabaseProperties, Property } from "@/hooks/useSupabaseProperties";
-import { supabase } from "@/integrations/supabase/client";
 import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
@@ -134,16 +133,20 @@ export default function PropertyDetail() {
     e.preventDefault();
     
     try {
-      const { data, error } = await supabase.functions.invoke('submit-lead', {
-        body: {
+      const response = await fetch('https://n8n.rafaelfcunha.com.br/webhook/lead-prime', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           ...contactForm,
           propertyCode: code,
           propertyTitle: property?.title,
-        },
+        }),
       });
 
-      if (error) {
-        throw new Error(error.message || 'Erro ao enviar mensagem');
+      if (!response.ok) {
+        throw new Error('Erro ao enviar mensagem');
       }
 
       // Rastreamento do evento de Lead no Facebook Pixel
