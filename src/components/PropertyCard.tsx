@@ -83,7 +83,22 @@ const PropertyCard = memo(function PropertyCard({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             decoding="async"
-
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+          />
+          
+          {/* Gradient overlay for better text contrast */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+          
+          {/* Navigation Arrows */}
+          {safeImages.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-foreground h-8 w-8 p-0"
+                onClick={prevImage}
+              >
+                <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -93,6 +108,8 @@ const PropertyCard = memo(function PropertyCard({
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
+            </>
+          )}
             </>
           )}
 
