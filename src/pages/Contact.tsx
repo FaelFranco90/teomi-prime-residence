@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, MessageCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { CONTACT_CONFIG, getWhatsAppURL } from "@/config/contact";
 
 export default function Contact() {
@@ -22,16 +23,12 @@ export default function Contact() {
     e.preventDefault();
     
     try {
-      const response = await fetch('https://n8n.rafaelfcunha.com.br/webhook/lead-prime', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const { error } = await supabase.functions.invoke('submit-lead', {
+        body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao enviar mensagem');
+      if (error) {
+        throw new Error(error.message || 'Erro ao enviar mensagem');
       }
 
       // Rastreamento do evento de Lead no Facebook Pixel

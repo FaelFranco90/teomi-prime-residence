@@ -16,19 +16,22 @@ serve(async (req) => {
     const body = await req.json();
     console.log('Received lead submission:', JSON.stringify(body));
 
-    // Forward to n8n webhook
-    const response = await fetch('https://n8n.rafaelfcunha.com.br/webhook/lead-prime', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    // Forward to n8n webhook (seu webhook está registrado para GET)
+    const url = new URL('https://n8n.rafaelfcunha.com.br/webhook/lead-prime');
+
+    if (body && typeof body === 'object') {
+      for (const [key, value] of Object.entries(body)) {
+        if (value === undefined || value === null) continue;
+        url.searchParams.set(key, typeof value === 'string' ? value : JSON.stringify(value));
+      }
+    }
+
+    const response = await fetch(url.toString(), { method: 'GET' });
+    const responseText = await response.text();
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('n8n webhook error:', errorText);
-      throw new Error(`Webhook returned ${response.status}: ${errorText}`);
+      console.error('n8n webhook error:', responseText);
+      throw new Error(`Webhook returned ${response.status}: ${responseText}`);
     }
 
     console.log('Lead submitted successfully to n8n');
