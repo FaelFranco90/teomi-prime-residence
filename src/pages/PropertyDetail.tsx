@@ -30,6 +30,7 @@ import { getWhatsAppURL } from "@/config/contact";
 import { useMetaTags } from "@/components/MetaTags";
 import { StructuredData, getPropertySchema } from "@/components/StructuredData";
 import { SEO_CONFIG, getFullUrl } from "@/config/seo";
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function PropertyDetail() {
@@ -44,6 +45,7 @@ export default function PropertyDetail() {
   });
 
   const { getPropertyByCode, getPropertyById } = useSupabaseProperties();
+  const { toast } = useToast();
 
   // Set meta tags dynamically based on property
   useMetaTags({
@@ -127,12 +129,49 @@ export default function PropertyDetail() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Contact form submitted:', contactForm);
+    
+    try {
+      const response = await fetch('https://n8n.rafaelfcunha.com.br/webhook/lead-prime', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...contactForm,
+          propertyCode: code,
+          propertyTitle: property?.title,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao enviar mensagem');
+      }
+
+      // Rastreamento do evento de Lead no Facebook Pixel
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead', {
+          content_name: `Interesse em ${property?.title}`,
+          content_type: 'property_inquiry',
+          value: 0,
+          currency: 'BRL',
+        });
+      }
+
+      toast({
+        title: "Mensagem enviada!",
+        description: "Entraremos em contato em breve com total discrição.",
+      });
+      setContactForm({ name: '', email: '', phone: '', message: '' });
+    } catch (error) {
+      console.error('Erro ao enviar contato:', error);
+      toast({
+        title: "Erro ao enviar",
+        description: "Ocorreu um problema ao enviar sua mensagem. Tente novamente.",
+        variant: "destructive",
+      });
     }
-    // In a real app, this would send the form data to an API
   };
 
   return (
