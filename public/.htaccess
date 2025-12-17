@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Evita problemas com content negotiation (MultiViews)
+  <IfModule mod_negotiation.c>
+    Options -MultiViews
+  </IfModule>
+
+  RewriteBase /
+
+  # Se o arquivo/pasta existe, serve normalmente
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # SPA fallback (React Router): qualquer rota vai para index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
