@@ -34,6 +34,16 @@ export default function Contact() {
         throw new Error('Erro ao enviar mensagem');
       }
 
+      // Rastreamento do evento de Lead no Facebook Pixel
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead', {
+          content_name: 'Formulário de Contato',
+          content_type: 'lead_form',
+          value: 0,
+          currency: 'BRL',
+        });
+      }
+
       toast({
         title: "Mensagem enviada!",
         description: "Entraremos em contato em breve com total discrição.",
