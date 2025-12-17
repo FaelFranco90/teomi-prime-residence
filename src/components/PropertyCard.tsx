@@ -110,8 +110,6 @@ const PropertyCard = memo(function PropertyCard({
               </Button>
             </>
           )}
-            </>
-          )}
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-2">
