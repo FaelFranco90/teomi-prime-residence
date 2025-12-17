@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Bed, Bath, Car, Square, MapPin, Play, Shield, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { withErrorBoundary } from "@/components/ErrorBoundary";
 import { useNavigate } from "react-router-dom";
+import { useLazyImageAdvanced } from "@/hooks/useLazyImage";
+import { generateOptimizedImageUrls, generateSrcset, generateSizes, getOptimizedCardImage } from "@/lib/imageOptimizer";
 
 interface PropertyCardProps {
   id: string;
@@ -66,13 +68,21 @@ const PropertyCard = memo(function PropertyCard({
   };
 
   if (viewMode === 'grid') {
+    // Optimize current image URL for card display
+    const currentImage = safeImages[currentImageIndex] || '/placeholder.svg';
+    const optimizedUrls = generateOptimizedImageUrls(currentImage);
+    
     return (
       <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img 
-            src={safeImages[currentImageIndex] || '/placeholder.svg'} 
+            src={getOptimizedCardImage(currentImage)}
+            srcSet={generateSrcset(optimizedUrls)}
+            sizes={generateSizes()}
             alt={title || 'Imóvel'}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
           />
           
@@ -213,6 +223,9 @@ const PropertyCard = memo(function PropertyCard({
   }
 
   // List mode (original layout)
+  const currentImageList = safeImages[currentImageIndex] || '/placeholder.svg';
+  const optimizedUrlsList = generateOptimizedImageUrls(currentImageList);
+  
   return (
     <Card className="group overflow-hidden hover:shadow-luxury transition-all duration-200 border border-border/50">
       <div className="flex gap-6 p-6">
@@ -220,9 +233,13 @@ const PropertyCard = memo(function PropertyCard({
         <div className="flex-shrink-0">
           <div className="relative w-80 h-60 rounded-lg overflow-hidden">
             <img 
-              src={safeImages[currentImageIndex] || '/placeholder.svg'} 
+              src={getOptimizedCardImage(currentImageList)}
+              srcSet={generateSrcset(optimizedUrlsList)}
+              sizes={generateSizes()}
               alt={title || 'Imóvel'}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
             />
             
@@ -293,9 +310,11 @@ const PropertyCard = memo(function PropertyCard({
                   onClick={() => setCurrentImageIndex(index)}
                 >
                   <img 
-                    src={image || '/placeholder.svg'} 
+                    src={getOptimizedCardImage(image || '/placeholder.svg')}
                     alt={`${title || 'Imóvel'} ${index + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                   />
                   {safeImages.length > 6 && index === 5 && (

@@ -1,5 +1,6 @@
 import { ImageLightbox } from "./ImageLightbox";
 import { Images } from "lucide-react";
+import { getOptimizedCardImage, getOptimizedThumbnail, generateOptimizedImageUrls, generateSrcset, generateSizes } from "@/lib/imageOptimizer";
 
 interface PropertyGalleryMosaicProps {
   images: string[];
@@ -8,6 +9,9 @@ interface PropertyGalleryMosaicProps {
 
 export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicProps) {
   if (!images || images.length === 0) return null;
+
+  const mainImageUrl = images[0];
+  const mainOptimized = generateOptimizedImageUrls(mainImageUrl);
 
   return (
     <div className="grid grid-cols-4 grid-rows-2 gap-2 h-80">
@@ -19,9 +23,13 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
           trigger={
             <div className="relative w-full h-full cursor-pointer overflow-hidden rounded-lg group">
               <img
-                src={images[0]}
+                src={getOptimizedCardImage(mainImageUrl)}
+                srcSet={generateSrcset(mainOptimized)}
+                sizes={generateSizes()}
                 alt={`${title} - Imagem principal`}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                 }}
@@ -45,9 +53,11 @@ export function PropertyGalleryMosaic({ images, title }: PropertyGalleryMosaicPr
               trigger={
                 <div className="relative w-full h-full cursor-pointer overflow-hidden rounded-lg group">
                   <img
-                    src={image}
+                    src={getOptimizedThumbnail(image)}
                     alt={`${title} - Imagem ${index + 2}`}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                     }}

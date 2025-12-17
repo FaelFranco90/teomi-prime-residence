@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { getOptimizedFullImage, generateOptimizedImageUrls, generateSrcset, generateSizes, getOptimizedThumbnail } from "@/lib/imageOptimizer";
 
 interface ImageLightboxProps {
   images: string[];
@@ -27,6 +28,9 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
     if (e.key === 'Escape') setIsOpen(false);
   };
 
+  const currentImage = images[currentIndex];
+  const optimizedUrls = generateOptimizedImageUrls(currentImage);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild onClick={() => setIsOpen(true)}>
@@ -47,12 +51,16 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
             <X className="h-6 w-6" />
           </Button>
 
-          {/* Main image */}
+          {/* Main image - Otimizado com srcset para alta resolução */}
           <div className="relative max-w-full max-h-full flex items-center justify-center">
             <img
-              src={images[currentIndex]}
+              src={getOptimizedFullImage(currentImage)}
+              srcSet={generateSrcset(optimizedUrls)}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 85vw"
               alt={`Imagem ${currentIndex + 1}`}
               className="max-w-full max-h-[85vh] object-contain"
+              loading="lazy"
+              decoding="async"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
               }}
@@ -86,7 +94,7 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
             {currentIndex + 1} / {images.length}
           </div>
 
-          {/* Thumbnail navigation */}
+          {/* Thumbnail navigation - Otimizado com lazy loading */}
           {images.length > 1 && (
             <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto p-2">
               {images.map((image, index) => (
@@ -100,9 +108,11 @@ export function ImageLightbox({ images, trigger, initialIndex = 0 }: ImageLightb
                   }`}
                 >
                   <img
-                    src={image}
+                    src={getOptimizedThumbnail(image)}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                     }}

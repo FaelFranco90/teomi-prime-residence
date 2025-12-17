@@ -28,6 +28,7 @@ import { PropertyGalleryMosaic } from "@/components/PropertyGalleryMosaic";
 import { PropertySpecsBar } from "@/components/PropertySpecsBar";
 import { PropertyActions } from "@/components/PropertyActions";
 import { getWhatsAppURL } from "@/config/contact";
+import { getOptimizedCardImage, generateOptimizedImageUrls, generateSrcset, generateSizes } from "@/lib/imageOptimizer";
 import { useMetaTags } from "@/components/MetaTags";
 import { StructuredData, getPropertySchema } from "@/components/StructuredData";
 import { SEO_CONFIG, getFullUrl } from "@/config/seo";
@@ -233,14 +234,24 @@ export default function PropertyDetail() {
                   initialIndex={0}
                   trigger={
                     <div className="relative h-80 cursor-pointer overflow-hidden rounded-lg group">
-                      <img
-                        src={property.images[0]}
-                        alt={property.title || 'Imóvel'}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
-                        }}
-                      />
+                      {(() => {
+                        const img = property.images[0];
+                        const optimized = generateOptimizedImageUrls(img);
+                        return (
+                          <img
+                            src={getOptimizedCardImage(img)}
+                            srcSet={generateSrcset(optimized)}
+                            sizes={generateSizes()}
+                            alt={property.title || 'Imóvel'}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
+                            }}
+                          />
+                        );
+                      })()}
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
                       <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2">
                         <Images className="h-4 w-4" />
@@ -248,6 +259,7 @@ export default function PropertyDetail() {
                       </div>
                     </div>
                   }
+
                 />
               ) : (
                 <PropertyGalleryMosaic 
