@@ -29,15 +29,16 @@ export default defineConfig(({ mode }) => ({
       output: {
         // Manter estrutura de assets
         assetFileNames: (assetInfo) => {
-          let extType = assetInfo.name.split('.').at(-1);
-          if (/png|jpe?g|gif|tiff|bmp|ico/i.test(extType)) {
-            extType = 'img';
-          } else if (/woff|woff2|ttf|otf|eot/.test(extType)) {
-            extType = 'fonts';
-          } else if (extType === 'css') {
-            extType = 'css';
+          const name = assetInfo.name || 'asset';
+          const ext = name.split('.').at(-1) || 'other';
+          if (/png|jpe?g|gif|tiff|bmp|ico/i.test(ext)) {
+            return `assets/img/[name]-[hash][extname]`;
+          } else if (/woff|woff2|ttf|otf|eot/.test(ext)) {
+            return `assets/fonts/[name]-[hash][extname]`;
+          } else if (ext === 'css') {
+            return `assets/css/[name]-[hash][extname]`;
           }
-          return `assets/${extType}/[name]-[hash][extname]`;
+          return `assets/[name]-[hash][extname]`;
         },
       },
     },

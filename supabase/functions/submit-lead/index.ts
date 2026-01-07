@@ -17,7 +17,7 @@ serve(async (req) => {
     console.log('Received lead submission:', JSON.stringify(body));
 
     // Forward to n8n webhook (seu webhook está registrado para GET)
-    const url = new URL('https://n8n.rafaelfcunha.com.br/webhook/lead-prime');
+    const url = new URL('https://n8n.teomiimoveis.com.br/webhook/lead-prime');
 
     if (body && typeof body === 'object') {
       for (const [key, value] of Object.entries(body)) {
