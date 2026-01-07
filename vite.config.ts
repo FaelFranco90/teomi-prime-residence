@@ -21,7 +21,12 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom', 'react-router-dom'],
+    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
+  },
+  optimizeDeps: {
+    // Force re-bundling dependencies to avoid duplicate React instances
+    force: true,
+    include: ["react", "react-dom", "react-router", "react-router-dom", "@tanstack/react-query"],
   },
   // Otimização de assets
   build: {
