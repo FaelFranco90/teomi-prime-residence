@@ -8,10 +8,8 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    // Configurar headers de cache para imagens estáticas
-    headers: {
-      'Cache-Control': 'public, max-age=31536000, immutable'
-    }
+    // Dev server must not aggressively cache JS modules (can cause invalid hook calls / duplicate React instances)
+    headers: mode === "development" ? { "Cache-Control": "no-store" } : undefined,
   },
   plugins: [
     react(),
